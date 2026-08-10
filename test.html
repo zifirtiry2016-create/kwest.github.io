@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <title>Головоломка: введи код</title>
+    <style>
+      body {
+        font-family: 'Courier New', monospace;
+        /* Фоновая картинка */
+        background-image: url('bg.jpg');
+        background-size: cover;       /* растянуть, чтобы заполнить весь экран */
+        background-repeat: no-repeat; /* не повторять картинку */
+        background-position: center;  /* центрировать */
+        
+        /* Запасной цвет фона, если картинка не загрузится */
+        background-color: #0f0f12;
+        
+        color: #DDA0DD;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .puzzle-box {
+  background: #12121a;
+  color: #e0e0e0;
+  padding: 25px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow:
+    0 0 8px rgba(0,0,0,0.6),
+    inset 0 0 12px rgba(0,0,0,0.5);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+}
+
+/* Декоративная рамка-обводка */
+.puzzle-box::before {
+  content: "";
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  border: 2px solid #00ccff;
+  pointer-events: none;
+  z-index: -1;
+}
+
+input {
+  background: #0b0b12;
+  border: 1px solid #333;
+  color: #fff;
+}
+button {
+  background: #00ccff; color: #000; font-weight: bold;
+}
+
+
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+      }
+
+      p.hint {
+        color: #888;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+      }
+
+      input {
+        padding: 12px;
+        font-family: inherit;
+        font-size: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #444;
+        background: #0d0d10;
+        color: white;
+        border-radius: 4px;
+        outline: none;
+      }
+
+      button {
+        margin-top: 15px;
+        padding: 10px 20px;
+        font-family: inherit;
+        cursor: pointer;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+      }
+
+      button:hover {
+        background: #34495e;
+      }
+
+      #message {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: left;
+        min-height: 24px;
+      }
+
+      .error-pulse {
+        animation: pulse-error 0.6s ease-in-out infinite alternate;
+        color: #ff5555;
+        border-color: #ff5555 !important;
+      }
+
+      @keyframes pulse-error {
+        from { transform: scale(1); opacity: 1; }
+        to { transform: scale(1.03); opacity: 0.8; }
+      }
+
+      .success-fade-in {
+        animation: fade-in 0.5s ease-out forwards;
+        color: #55ff55;
+      }
+
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="puzzle-box">
+      <h1>Введи секретный код</h1>
+      <p class="hint">Подсказка: это слово из семи букв, означающее "поток".</p>
+      <input type="text" id="codeInput" placeholder="Код">
+      <button onclick="checkCode()">Проверить</button>
+      <div id="message"></div>
+    </div>
+
+    <script>
+      function checkCode() {
+        const input = document.getElementById('codeInput').value.trim().toLowerCase();
+        const message = document.getElementById('message');
+
+        message.className = '';
+        document.getElementById('codeInput').classList.remove('error-pulse');
+
+        if (input === 'флюксус') {
+          message.textContent = 'Верно! Получите по ебалу и переходите к следующей станции';
+          message.classList.add('success-fade-in');
+
+          setTimeout(() => {
+            // window.location.href = 'next-room.html';
+            console.log('Переход к следующей локации');
+          }, 1000);
+        } else {
+          message.textContent = 'Неверно. Получите по ебалу и попробуйте ещё раз';
+          message.style.color = '#32CD32';
+
+          const inputField = document.getElementById('codeInput');
+          inputField.classList.add('error-pulse');
+        }
+      }
+    </script>
+  </body>
+</html>
