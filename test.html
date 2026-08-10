@@ -2,6 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Головоломка: введи код</title>
     <style>
       body {
@@ -145,6 +146,7 @@ button {
 
         if (input === 'флюксус') {
           message.textContent = 'Верно! Получите по ебалу и переходите к следующей станции';
+	  message.style.color = '#32CD32';
           message.classList.add('success-fade-in');
 
           setTimeout(() => {
@@ -153,7 +155,7 @@ button {
           }, 1000);
         } else {
           message.textContent = 'Неверно. Получите по ебалу и попробуйте ещё раз';
-          message.style.color = '#32CD32';
+          message.style.color = '#FF0000';
 
           const inputField = document.getElementById('codeInput');
           inputField.classList.add('error-pulse');
