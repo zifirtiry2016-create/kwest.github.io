@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <title>Головоломка: введи код</title>
+    <style>
+      body {
+        font-family: 'Courier New', monospace; /* стиль как в терминале/коде */
+        background: #0f0f12;
+        color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .puzzle-box {
+        background: #1a1a20;
+        padding: 30px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+      }
+
+      p.hint {
+        color: #888;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+      }
+
+      input {
+        padding: 12px;
+        font-family: inherit;
+        font-size: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #444;
+        background: #0d0d10;
+        color: white;
+        border-radius: 4px;
+        outline: none;
+      }
+
+      button {
+        margin-top: 15px;
+        padding: 10px 20px;
+        font-family: inherit;
+        cursor: pointer;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+      }
+
+      button:hover {
+        background: #34495e;
+      }
+
+      #message {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: left;
+        min-height: 24px; /* чтобы блок не «прыгал» */
+      }
+
+      /* Анимация для неверного ответа: пульсация */
+      .error-pulse {
+        animation: pulse-error 0.6s ease-in-out infinite alternate;
+        color: #ff5555;
+        border-color: #ff5555 !important;
+      }
+
+      @keyframes pulse-error {
+        from { transform: scale(1); opacity: 1; }
+        to { transform: scale(1.03); opacity: 0.8; }
+      }
+
+      /* Анимация появления правильного ответа */
+      .success-fade-in {
+        animation: fade-in 0.5s ease-out forwards;
+        color: #55ff55;
+      }
+
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="puzzle-box">
+      <h1>Введи секретный код</h1>
+      <p class="hint">Подсказка: это слово из 4 букв, связанное с кино.</p>
+      <input type="text" id="codeInput" placeholder="Код">
+      <button onclick="checkCode()">Проверить</button>
+      <div id="message"></div>
+    </div>
+
+    <script>
+      function checkCode() {
+        const input = document.getElementById('codeInput').value.trim().toLowerCase();
+        const message = document.getElementById('message');
+
+        // Убираем старые классы анимации
+        message.className = '';
+        document.getElementById('codeInput').classList.remove('error-pulse');
+
+        if (input === 'film') {
+          message.textContent = 'Верно! Дверь открылась.';
+          message.classList.add('success-fade-in');
+
+          // Через 1 секунду можно перенаправить на следующую локацию
+          setTimeout(() => {
+            // window.location.href = 'next-room.html';
+            console.log('Переход к следующей локации');
+          }, 1000);
+        } else {
+          message.textContent = 'Неверно. Попробуй ещё.';
+          message.style.color = '#ff5555';
+
+          const inputField = document.getElementById('codeInput');
+          inputField.classList.add('error-pulse'); // пульсация поля
+        }
+      }
+    </script>
+  </body>
+</html>
