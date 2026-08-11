@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Найди кота</title>
+    <style>
+      body { font-family: sans-serif; background: #050508; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+      .puzzle-box { max-width: 600px; width: 90%; }
+      img { width: 100%; display: block; cursor: crosshair; }
+      #hint, #result { margin: 12px 0; font-size: 0.9rem; }
+      #result { font-weight: bold; min-height: 24px; }
+    </style>
+  </head>
+  <body>
+    <div class="puzzle-box">
+      <h2>Найди кота</h2>
+      <p id="hint">Подсказка: он в урагане.</p>
+      <!-- Замени src на свою картинку -->
+      <img src="basement.jpg" alt="Подвал" id="scene" usemap="#hotspots">
+      <map name="hotspots">
+        <!-- Правильная зона: x1,y1,x2,y2 -->
+        <area shape="rect" coords="280,190,340,240" alt="Ключ" onclick="onCorrectClick()">
+        <!-- Остальные зоны — ложные -->
+        <area shape="rect" coords="100,100,160,150" alt="Банка" onclick="onWrongClick()">
+        <area shape="rect" coords="450,300,510,350" alt="Тень" onclick="onWrongClick()">
+      </map>
+      <div id="result"></div>
+    </div>
+
+    <script>
+      function onCorrectClick() {
+        document.getElementById('result').textContent = 'Ты нашёл кота!';
+        document.getElementById('result').style.color = '#55ff55';
+        // window.location.href = 'next-room.html';
+      }
+      function onWrongClick() {
+        document.getElementById('result').textContent = 'Это не кот. Ищи внимательнее.';
+        document.getElementById('result').style.color = '#ff5555';
+      }
+    </script>
+  </body>
+</html>

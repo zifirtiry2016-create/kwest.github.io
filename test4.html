@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <title>Таймер: выбор решения</title>
+    <style>
+      body { font-family: sans-serif; background: #220000; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+      .puzzle-box { background: #330000; padding: 25px; border-radius: 8px; max-width: 450px; width: 90%; text-align: center; border: 2px solid #ff3333; }
+      h2 { color: #ff5555; }
+      p { font-size: 0.95rem; }
+      button { padding: 12px 20px; margin: 8px 4px; background: #fff; color: #000; border: none; border-radius: 4px; cursor: pointer; }
+      button:hover { background: #ddd; }
+      #timer { font-size: 1.5rem; font-weight: bold; color: #ff3333; margin: 15px 0; }
+      #message { margin-top: 15px; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class="puzzle-box">
+      <h2>Аварийное отключение</h2>
+      <p>У тебя есть 20 секунд, чтобы выбрать правильное действие.</p>
+      <div id="timer">20</div>
+      <div>
+        <button onclick="choose('stop')">Остановить систему</button>
+        <button onclick="choose('restart')">Перезапустить</button>
+        <button onclick="choose('ignore')">Игнорировать</button>
+      </div>
+      <div id="message"></div>
+    </div>
+
+    <script>
+      let timeLeft = 20;
+      const timerEl = document.getElementById('timer');
+      const messageEl = document.getElementById('message');
+      let timerInterval;
+
+      function startTimer() {
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          timerEl.textContent = timeLeft;
+          if (timeLeft <= 0) {
+            endGame('Время вышло! Система перешла в аварийный режим.');
+          }
+        }, 1000);
+      }
+
+      function choose(action) {
+        clearInterval(timerInterval);
+        if (action === 'stop') {
+          endGame('Система остановлена. Ты спас комнату!');
+        } else {
+          endGame('Неверный выбор. Система повреждена.');
+        }
+      }
+
+      function endGame(text) {
+        messageEl.textContent = text;
+        messageEl.style.color = text.includes('спас') ? '#55ff55' : '#ff3333';
+        // window.location.href = text.includes('спас') ? 'next-room.html' : 'game-over.html';
+      }
+
+      startTimer();
+    </script>
+  </body>
+</html>

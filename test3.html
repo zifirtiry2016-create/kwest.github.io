@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <title>Перетащи предмет</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body { font-family: sans-serif; background: #0f172a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+      .puzzle-box { text-align: center; }
+      .slots { display: flex; gap: 16px; margin: 20px 0; justify-content: center; }
+      .slot { width: 80px; height: 80px; border: 2px dashed #555; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; }
+      .item { width: 70px; height: 70px; background: #ff5e5e; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: grab; user-select: none; }
+      .item:active { cursor: grabbing; }
+      #status { margin-top: 15px; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class="puzzle-box">
+      <h2>Расставь элементы</h2>
+      <p>Перетащи красные блоки в слоты по порядку.</p>
+      <div class="slots">
+        <div class="slot" id="slot1"></div>
+        <div class="slot" id="slot2"></div>
+        <div class="slot" id="slot3"></div>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="item" draggable="true" ondragstart="drag(event)">1</div>
+        <div class="item" draggable="true" ondragstart="drag(event)">2</div>
+        <div class="item" draggable="true" ondragstart="drag(event)">3</div>
+      </div>
+      <div id="status"></div>
+    </div>
+
+    <script>
+      let draggedItem = null;
+      function drag(ev) {
+        draggedItem = ev.target;
+        ev.dataTransfer.setData('text', draggedItem.textContent);
+      }
+      function allowDrop(ev) { ev.preventDefault(); }
+      function drop(ev) {
+        ev.preventDefault();
+        const slot = ev.currentTarget;
+        slot.innerHTML = '';
+        const itemClone = draggedItem.cloneNode(true);
+        itemClone.onDragStart = null; // чтобы не тянулся дальше
+        itemClone.draggable = false;
+        slot.appendChild(itemClone);
+        checkOrder();
+      }
+
+      function checkOrder() {
+        const s1 = document.getElementById('slot1').textContent;
+        const s2 = document.getElementById('slot2').textContent;
+        const s3 = document.getElementById('slot3').textContent;
+        const status = document.getElementById('status');
+
+        if (s1 === '1' && s2 === '2' && s3 === '3') {
+          status.textContent = 'Порядок верный! Система активирована.';
+          status.style.color = '#55ff55';
+          // window.location.href = 'next-room.html';
+        } else {
+          status.textContent = 'Пока не совпадает. Попробуй ещё.';
+          status.style.color = '#ff5555';
+        }
+      }
+
+      document.querySelectorAll('.slot').forEach(slot => {
+        slot.addEventListener('dragover', allowDrop);
+        slot.addEventListener('drop', drop);
+      });
+    </script>
+  </body>
+</html>

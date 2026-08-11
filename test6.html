@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <title>Протокол: Хронология событий</title>
+    <style>
+      body {
+        font-family: 'Courier New', monospace;
+        background: #0b0d12;
+        color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .puzzle-box {
+        max-width: 500px;
+        width: 90%;
+        background: #141823;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #333;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      }
+      h2 {
+        text-align: center;
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+      }
+      #story-display {
+        background: #080a0f;
+        border: 1px dashed #444;
+        padding: 16px;
+        border-radius: 4px;
+        margin-bottom: 18px;
+        line-height: 1.5;
+      }
+      .story-item {
+        color: #aaa;
+        margin-bottom: 8px;
+      }
+      .story-item.added {
+        color: #fff;
+        font-weight: bold;
+      }
+      .question-text {
+        font-weight: bold;
+        margin-bottom: 14px;
+        color: #ddd;
+      }
+      .options {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .option-btn {
+        padding: 10px 12px;
+        text-align: left;
+        background: #222833;
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+      .option-btn:hover { background: #333b4a; }
+      .option-btn.selected {
+        border-color: #ffaa00;
+        background: #3a4555;
+      }
+      .feedback {
+        margin-top: 12px;
+        font-size: 0.9rem;
+        min-height: 1.2em;
+      }
+      .correct-feedback { color: #55ff55; }
+      .wrong-feedback { color: #ff5555; }
+      #next-btn {
+        display: none;
+        margin-top: 16px;
+        padding: 10px 20px;
+        background: #ffaa00;
+        color: #000;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #progress {
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="puzzle-box">
+      <h2>Протокол №9: Хронология</h2>
+      <div id="progress">Фрагмент 1 из 3</div>
+      <div id="story-display"></div>
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options-container"></div>
+      <div class="feedback" id="feedback"></div>
+      <button id="next-btn" onclick="nextFragment()">Далее</button>
+    </div>
+
+    <script>
+      const fragments = [
+        {
+          text: '17:03 — Объект вошёл в зону наблюдения у северного выхода.',
+          order: 1
+        },
+        {
+          text: '16:58 — Сработала сигнализация на складе B.',
+          order: 2
+        },
+        {
+          text: '17:11 — Зафиксировано отключение резервного питания.',
+          order: 3
+        }
+      ];
+
+      // Перемешиваем варианты для каждого вопроса: правильный ответ всегда первый в options
+      const questions = [
+        {
+          prompt: 'Какой фрагмент должен идти следующим в хронологии?',
+          options: [
+            { text: '16:58 — Сработала сигнализация на складе B.', isCorrect: true },
+            { text: '17:11 — Зафиксировано отключение резервного питания.', isCorrect: false },
+            { text: '17:03 — Объект вошёл в зону наблюдения у северного выхода.', isCorrect: false }
+          ],
+          correctIndex: 0
+        },
+        {
+          prompt: 'Что произошло сразу после этого события?',
+          options: [
+            { text: '17:03 — Объект вошёл в зону наблюдения у северного выхода.', isCorrect: true },
+            { text: '16:58 — Сработала сигнализация на складе B.', isCorrect: false },
+            { text: '17:11 — Зафиксировано отключение резервного питания.', isCorrect: false }
+          ],
+          correctIndex: 0
+        },
+        {
+          prompt: 'Какое событие завершает эту цепочку?',
+          options: [
+            { text: '17:11 — Зафиксировано отключение резервного питания.', isCorrect: true },
+            { text: '16:58 — Сработала сигнализация на складе B.', isCorrect: false },
+            { text: '17:03 — Объект вошёл в зону наблюдения у северного выхода.', isCorrect: false }
+          ],
+          correctIndex: 0
+        }
+      ];
+
+      let currentQ = 0;
+      let addedFragments = []; // уже добавленные фрагменты в правильном порядке
+      const storyDisplay = document.getElementById('story-display');
+      const qText = document.getElementById('question-text');
+      const optionsContainer = document.getElementById('options-container');
+      const feedback = document.getElementById('feedback');
+      const nextBtn = document.getElementById('next-btn');
+      const progress = document.getElementById('progress');
+
+      function renderStory() {
+        storyDisplay.innerHTML = '';
+        addedFragments.forEach((f, idx) => {
+          const div = document.createElement('div');
+          div.className = 'story-item added';
+          div.textContent = f.text;
+          storyDisplay.appendChild(div);
+        });
+      }
+
+      function renderQuestion() {
+        const q = questions[currentQ];
+        qText.textContent = q.prompt;
+        progress.textContent = `Фрагмент ${currentQ + 1} из ${questions.length}`;
+        feedback.textContent = '';
+        nextBtn.style.display = 'none';
+
+        optionsContainer.innerHTML = '';
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'option-btn';
+          btn.textContent = opt.text;
+          btn.onclick = () => checkAnswer(idx, q);
+          optionsContainer.appendChild(btn);
+        });
+      }
+
+      function checkAnswer(selectedIdx, q) {
+        const allBtns = optionsContainer.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.classList.remove('selected'));
+        allBtns[selectedIdx].classList.add('selected');
+
+        if (selectedIdx === q.correctIndex) {
+          feedback.textContent = 'Верно. Хронология восстановлена.';
+          feedback.className = 'feedback correct-feedback';
+          // Добавляем правильный фрагмент в историю
+          addedFragments.push(q.options[selectedIdx]);
+          renderStory();
+          nextBtn.style.display = 'block';
+        } else {
+          feedback.textContent = 'Неверно. Проверь временные метки и логику событий.';
+          feedback.className = 'feedback wrong-feedback';
+        }
+      }
+
+      function nextFragment() {
+        currentQ++;
+        if (currentQ >= questions.length) {
+          alert('Хронология восстановлена! Доступ к следующей локации открыт.');
+          // window.location.href = 'next-room.html';
+          return;
+        }
+        renderQuestion();
+      }
+
+      // Старт
+      renderQuestion();
+    </script>
+  </body>
+</html>
