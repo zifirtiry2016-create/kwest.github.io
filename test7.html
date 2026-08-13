@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест: Свойства цифровой среды</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .quest-container {
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            background: #16213e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        h2 { margin-bottom: 1.5rem; }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .option-btn {
+            background: #0f3460;
+            color: white;
+            border: 2px solid transparent;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+        }
+        .option-btn:hover {
+            background: #e94560;
+            transform: translateY(-2px);
+        }
+        .option-btn.selected {
+            background: #e94560;
+            border-color: #fff;
+        }
+        #result-message {
+            margin-top: 1rem;
+            font-weight: bold;
+            min-height: 1.2em;
+        }
+        .correct-text { color: #4ade80; }
+        .partial-text { color: #fbbf24; }
+        .wrong-text { color: #ef4444; }
+        button.submit-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.6rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+        button.submit-btn:disabled {
+            background: #4b536d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quest-container">
+    <h2>Назовите 4 свойства цифровой среды</h2>
+
+    <div class="options-grid" id="options-container">
+        <!-- Кнопки генерируются через JS -->
+    </div>
+
+    <button class="submit-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    <div id="result-message"></div>
+</div>
+
+<script>
+    const correctAnswers = [
+        "гипертекстуальность",
+        "интерактивность",
+        "иммерсивность",
+        "мультимедийность"
+    ];
+
+    const allOptions = [
+        "гипертекстуальность",
+        "интерактивность",
+        "иммерсивность",
+        "мультимедийность",
+        "внеобъектность",
+        "медийность",
+        "функциональность",
+        "гиперсексуальность"
+    ];
+
+    const container = document.getElementById('options-container');
+    const resultMessage = document.getElementById('result-message');
+    const checkBtn = document.getElementById('check-btn');
+
+    // Создаём кнопки
+    allOptions.forEach(option => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = option;
+        btn.onclick = () => toggleSelection(btn);
+        container.appendChild(btn);
+    });
+
+    function toggleSelection(btn) {
+        btn.classList.toggle('selected');
+    }
+
+    function checkAnswer() {
+        // Получаем все выбранные кнопки
+        const selectedBtns = container.querySelectorAll('.option-btn.selected');
+        const selectedTexts = Array.from(selectedBtns).map(b => b.textContent.toLowerCase());
+
+        if (selectedTexts.length === 0) {
+            resultMessage.textContent = "Выберите хотя бы один вариант!";
+            resultMessage.className = "";
+            return;
+        }
+
+        // Считаем количество верных и неверных
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        selectedTexts.forEach(text => {
+            if (correctAnswers.includes(text)) {
+                correctCount++;
+            } else {
+                wrongCount++;
+            }
+        });
+
+        // Логика проверки
+        if (correctCount === 4 && wrongCount === 0) {
+            resultMessage.textContent = "Ответ верный. Получите по ебалу!";
+            resultMessage.className = "correct-text";
+        } else if (correctCount > 0) {
+            resultMessage.textContent = "Ответ частично верный";
+            resultMessage.className = "partial-text";
+        } else {
+            resultMessage.textContent = "Ответ неверный";
+            resultMessage.className = "wrong-text";
+        }
+    }
+</script>
+
+</body>
+</html>
