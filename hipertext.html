@@ -157,10 +157,7 @@
   /* ——— ВЕРТИКАЛЬНЫЙ ТЕЛЕФОН (портрет) ——— */
   @media (max-width: 600px) {
     body { padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-    .wrap {
-      padding: 16px 12px;
-      border-radius: 18px;
-    }
+    .wrap { padding: 16px 12px; border-radius: 18px; }
     h1 { font-size: 21px; margin-bottom: 14px; }
     .timer-wrap { margin-bottom: 14px; }
     .timer { font-size: 32px; min-width: 84px; padding: 3px 18px; }
@@ -465,7 +462,9 @@ function normalizeAnswer(s) {
 }
 
 function isCorrectAnswer(s) {
-  return normalizeAnswer(s).includes('гипертекстуальн');
+  const n = normalizeAnswer(s);
+  // Принимаем: гипертекстуальность, гипертекст, гиперссылки (и их формы)
+  return n.includes('гипертекст') || n.includes('гиперссылк');
 }
 
 function submitAnswer() {
