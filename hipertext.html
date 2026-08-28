@@ -29,10 +29,9 @@
     box-shadow: 0 20px 60px rgba(0,0,0,.5);
   }
 
-  h1 { font-size: 28px; text-align: center; margin-bottom: 8px; }
-  .subtitle { text-align: center; color: #d5b8f0; margin-bottom: 16px; font-size: 15px; }
+  h1 { font-size: 28px; text-align: center; margin-bottom: 24px; }
 
-  .timer-wrap { text-align: center; margin-bottom: 16px; }
+  .timer-wrap { text-align: center; margin-bottom: 24px; }
   .timer {
     display: inline-block;
     font-size: 42px; font-weight: 800;
@@ -48,14 +47,6 @@
   .timer.hidden { display: none; }
 
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
-
-  .steps { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 24px; }
-  .step {
-    padding: 6px 14px; border-radius: 999px; font-size: 13px;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: #b39ddb;
-  }
-  .step.active { background: #ff6ec7; color: #1e0a3c; border-color: #ff6ec7; font-weight: 600; }
-  .step.done { background: rgba(96,165,250,.25); border-color: rgba(96,165,250,.5); color: #bfdbfe; }
 
   .node-title { text-align: center; font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #ff9fe0; }
 
@@ -80,7 +71,7 @@
 
   #message { min-height: 24px; text-align: center; margin: 18px 0 4px; font-size: 15px; color: #ffb3e6; }
 
-  .controls { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 10px; }
+  .controls { display: flex; justify-content: flex-start; align-items: center; margin-top: 20px; }
   button {
     padding: 10px 18px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
     cursor: pointer; background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff;
@@ -89,7 +80,6 @@
   }
   button:hover { opacity: .9; transform: translateY(-1px); }
   button:disabled { opacity: .35; cursor: not-allowed; transform: none; }
-  .counter { font-size: 13px; color: #b39ddb; }
 
   .win { text-align: center; padding: 30px 10px; }
   .win .emoji { font-size: 64px; animation: pop .6s; }
@@ -108,6 +98,34 @@
     border-radius: 14px;
   }
   .win button + button { margin-left: 12px; }
+
+  .question {
+    max-width: 520px; margin: 0 auto;
+    background: rgba(255,255,255,.07);
+    border: 2px solid rgba(255,110,199,.35);
+    border-radius: 18px; padding: 26px 22px;
+  }
+  .question .q-text {
+    font-size: 17px; line-height: 1.55; color: #f3eaff;
+    margin: 6px 0 18px;
+  }
+  .question input[type="text"] {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,.25);
+    background: rgba(0,0,0,.3);
+    color: #f3eaff;
+    outline: none;
+    text-align: center;
+    margin-bottom: 14px;
+    touch-action: manipulation;
+  }
+  .question input[type="text"]:focus { border-color: #ff6ec7; }
+  .question input[type="text"].wrong { border-color: #e11d48; animation: shake .4s; }
+  .question .q-msg { min-height: 24px; margin-top: 12px; font-size: 15px; color: #ffb3e6; }
+  .question .q-ok { color: #7CFC9A; }
 
   @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
@@ -136,21 +154,19 @@
   @media (max-width: 600px) {
     body { padding: 10px; }
     .wrap { padding: 18px 14px; border-radius: 18px; }
-    h1 { font-size: 22px; }
-    .subtitle { font-size: 14px; }
+    h1 { font-size: 22px; margin-bottom: 18px; }
     .timer { font-size: 34px; min-width: 90px; padding: 3px 20px; }
-    .steps { gap: 6px; margin-bottom: 18px; }
-    .step { padding: 5px 10px; font-size: 12px; }
     .node-title { font-size: 16px; }
     .tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
     .tile { padding: 16px 8px; font-size: 14px; min-height: 56px; border-radius: 12px; }
     #message { font-size: 14px; }
-    .controls { flex-wrap: wrap; }
-    .counter { font-size: 12px; }
     .win { padding: 20px 6px; }
     .win .emoji { font-size: 48px; }
     .win h2 { font-size: 22px; }
     .win .found, .win .trap-msg { font-size: 16px; padding: 12px 16px; }
+    .question { padding: 20px 14px; }
+    .question .q-text { font-size: 15px; }
+    .question input[type="text"] { font-size: 15px; }
     .overlay-card { padding: 24px 18px; }
     .overlay-card h2 { font-size: 21px; }
     .overlay-card p { font-size: 15px; }
@@ -166,15 +182,12 @@
 <body>
 <div class="wrap">
   <h1>🎬 Квест</h1>
-  <p class="subtitle">Найди свою родную <b>«Режиссуру мультимедиа»</b> — и успей за 10 секунд.</p>
-  <div class="timer-wrap"><span class="timer hidden" id="timer">10</span></div>
-  <div class="steps" id="steps"></div>
+  <div class="timer-wrap"><span class="timer hidden" id="timer">15</span></div>
   <div class="node-title" id="nodeTitle"></div>
   <div class="tiles" id="tiles"></div>
   <div id="message"></div>
   <div class="controls">
     <button id="backBtn">← Назад</button>
-    <span class="counter" id="counter"></span>
   </div>
 </div>
 
@@ -183,7 +196,7 @@
   <div class="overlay-card">
     <div class="emoji">🎬</div>
     <h2>Квест</h2>
-    <p>Здесь тебе необходимо найти свою родную режиссуру мультимедиа. Будь внимателен, для этого у тебя есть всего лишь 10 секунд.</p>
+    <p>Найди режиссуру мультимедиа. Будь внимателен, для этого у тебя есть всего лишь 15 секунд.</p>
     <button id="startBtn">Начать!</button>
   </div>
 </div>
@@ -199,14 +212,14 @@
 </div>
 
 <script>
-const STEPS = ['Институт', 'Факультет', 'Уровень', 'Специальность', 'Направление'];
+const TIME_LIMIT = 15;
 
 const nodes = {
   institutes: {
     title: 'Выбери институт',
     options: [
-      { label: 'СПбГИКиТ', to: 'gikit_faculties' },
-      { label: 'СПбГУП', to: 'gup_faculties' }
+      { label: 'СПбГУИКиТ', to: 'gup_faculties' },
+      { label: 'СПбГИКиТ', to: 'gikit_faculties' }
     ]
   },
 
@@ -275,7 +288,7 @@ const nodes = {
   gup_faculties: {
     title: 'Выбери факультет СПбГУП',
     options: [
-      { label: 'Факультет культуры', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' },
+      { label: 'Факультет культуры', wrong: true, msg: 'Кажется, что-то не то.' },
       { label: 'Факультет искусств', to: 'gup_levels' },
       { label: 'Экономический факультет', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' },
       { label: 'Юридический факультет', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' },
@@ -285,20 +298,20 @@ const nodes = {
   gup_levels: {
     title: 'Выбери уровень образования',
     options: [
-      { label: 'Бакалавриат', wrong: true, msg: 'Ну, твой путь изначально вызывал сомнение. Пока.' },
+      { label: 'Бакалавриат', wrong: true, msg: 'Неправильно. Твой путь изначально вызывал сомнение.' },
       { label: 'Специалитет', to: 'gup_specialties' },
-      { label: 'Магистратура', wrong: true, msg: 'Ну, твой путь изначально вызывал сомнение. Пока.' }
+      { label: 'Магистратура', wrong: true, msg: 'Неправильно. Твой путь изначально вызывал сомнение.' }
     ]
   },
   gup_specialties: {
     title: 'Выбери специальность',
     options: [
-      { label: 'История искусств', wrong: true, msg: 'У тебя точно всё в порядке? Неправильно.' },
-      { label: 'Музыкальная звукорежиссура', wrong: true, msg: 'У тебя точно всё в порядке? Неправильно.' },
-      { label: 'Народная художественная культура', wrong: true, msg: 'У тебя точно всё в порядке? Неправильно.' },
+      { label: 'История искусств', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' },
+      { label: 'Музыкальная звукорежиссура', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' },
+      { label: 'Народная художественная культура', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' },
       { label: 'Режиссура кино и телевидения', to: 'gup_directions' },
-      { label: 'Актёрское искусство', wrong: true, msg: 'У тебя точно всё в порядке? Неправильно.' },
-      { label: 'Режиссура театра', wrong: true, msg: 'У тебя точно всё в порядке? Неправильно.' }
+      { label: 'Актёрское искусство', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' },
+      { label: 'Режиссура театра', wrong: true, msg: 'Ты что, забыл, как каша дома пахнет? НЕПРАВИЛЬНЫЙ ПУТЬ!' }
     ]
   },
   gup_directions: {
@@ -309,55 +322,30 @@ const nodes = {
   }
 };
 
-const STEP_INDEX = {
-  institutes: 0,
-  gikit_faculties: 1, gup_faculties: 1,
-  fmt_levels: 2, levels: 2, gup_levels: 2,
-  fmt_programs: 3, specialties: 3, gup_specialties: 3,
-  directions: 4, gup_directions: 4
-};
-
 let history = ['institutes'];
-let wrongClicks = 0;
 let finished = false;
 let trapped = false;
+let awaitingAnswer = false;
 
-let timeLeft = 10;
+let timeLeft = TIME_LIMIT;
 let timerId = null;
 
 const tilesEl = document.getElementById('tiles');
 const titleEl = document.getElementById('nodeTitle');
 const msgEl = document.getElementById('message');
-const stepsEl = document.getElementById('steps');
 const backBtn = document.getElementById('backBtn');
-const counterEl = document.getElementById('counter');
 const timerEl = document.getElementById('timer');
 const startOverlay = document.getElementById('startOverlay');
 const timeoutOverlay = document.getElementById('timeoutOverlay');
 
 function current() { return nodes[history[history.length - 1]]; }
 
-function renderSteps() {
-  stepsEl.innerHTML = '';
-  const curId = history[history.length - 1];
-  STEPS.forEach((name, i) => {
-    const span = document.createElement('span');
-    span.className = 'step';
-    const curStep = STEP_INDEX[curId];
-    if (i === curStep) span.classList.add('active');
-    else if (i < curStep) span.classList.add('done');
-    span.textContent = (i + 1) + '. ' + name;
-    stepsEl.appendChild(span);
-  });
-}
-
 function render() {
-  renderSteps();
   const node = current();
   tilesEl.innerHTML = '';
   msgEl.textContent = '';
-  counterEl.textContent = 'Неверных кликов: ' + wrongClicks;
 
+  if (awaitingAnswer) { renderQuestion(); return; }
   if (finished) { renderWin(); return; }
   if (trapped) { renderTrap(); return; }
 
@@ -374,13 +362,12 @@ function render() {
 
 function onTileClick(opt, tile) {
   if (opt.win) {
-    finished = true;
+    awaitingAnswer = true;
     stopTimer();
     render();
     return;
   }
   if (opt.trap) {
-    wrongClicks++;
     trapped = true;
     render();
     return;
@@ -390,22 +377,72 @@ function onTileClick(opt, tile) {
     render();
     return;
   }
-  wrongClicks++;
   tile.classList.add('wrong');
-  msgEl.textContent = opt.msg || '❌ Это неверный путь. Попробуй другую плашку или вернись назад.';
-  counterEl.textContent = 'Неверных кликов: ' + wrongClicks;
+  msgEl.textContent = opt.msg || '❌ Что-то явно не то...';
   setTimeout(() => tile.classList.remove('wrong'), 500);
+}
+
+// ——— Финальный вопрос ———
+function renderQuestion() {
+  titleEl.textContent = '';
+  backBtn.disabled = true;
+  tilesEl.innerHTML = `
+    <div class="win">
+      <div class="emoji">🎉</div>
+      <h2>Ты нашёл режиссуру мультимедиа!</h2>
+      <div class="question">
+        <p class="q-text">Для того чтобы найти режиссуру мультимедиа, ты переходил по ссылкам. Как это называется?</p>
+        <input type="text" id="answerInput" placeholder="Твой ответ..." autocomplete="off">
+        <button onclick="submitAnswer()">Ответить</button>
+        <div class="q-msg" id="qMsg"></div>
+      </div>
+    </div>`;
+  const input = document.getElementById('answerInput');
+  input.focus();
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitAnswer();
+  });
+}
+
+function normalizeAnswer(s) {
+  return s.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function isCorrectAnswer(s) {
+  return normalizeAnswer(s).includes('гипертекстуальн');
+}
+
+function submitAnswer() {
+  const input = document.getElementById('answerInput');
+  const qMsg = document.getElementById('qMsg');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    qMsg.textContent = 'Введи ответ!';
+    return;
+  }
+  if (isCorrectAnswer(val)) {
+    awaitingAnswer = false;
+    finished = true;
+    qMsg.innerHTML = '✅ <span class="q-ok">Правильно!</span>';
+    setTimeout(() => render(), 600);
+  } else {
+    input.classList.add('wrong');
+    qMsg.textContent = '❌ Неправильно. Попробуй ещё раз.';
+    setTimeout(() => input.classList.remove('wrong'), 500);
+    input.value = '';
+    input.focus();
+  }
 }
 
 function renderWin() {
   titleEl.textContent = '';
   tilesEl.innerHTML = `
     <div class="win">
-      <div class="emoji">🎉</div>
-      <h2>Квест пройден!</h2>
+      <div class="emoji">🏆</div>
+      <h2>Квест пройден! Запомни слово и его форму: гезамткунстверка</h2>
       <div class="found">Режиссёр мультимедиа</div>
-      <p>Ты успел за ${timeLeft} секунд до конца таймера.<br>
-      Правильный путь: СПбГИКиТ → ФЭИ → Специалитет → Режиссура кино и телевидения</p>
+      <p>Ты успел, оставалось ${timeLeft} секунд.<br> </p>
       <button onclick="resetGame()">🔄 Пройти заново</button>
     </div>`;
   backBtn.disabled = true;
@@ -418,7 +455,7 @@ function renderTrap() {
       <div class="emoji">🤔</div>
       <h2>Тупик</h2>
       <div class="trap-msg">Ты нашёл режиссуру мультимедиа... Но ту ли?</div>
-      <p>Это не та плашка, а таймер продолжает идти! Настоящая «Режиссура мультимедиа» ждёт в СПбГИКиТ.</p>
+      <p>Это не та плашка, а таймер продолжает идти.</p>
       <button onclick="continueQuest()">← Вернуться к выбору</button>
       <button onclick="resetGame()">🔄 Пройти заново</button>
     </div>`;
@@ -437,7 +474,7 @@ function updateTimer() {
 }
 
 function startTimer() {
-  timeLeft = 10;
+  timeLeft = TIME_LIMIT;
   updateTimer();
   timerId = setInterval(() => {
     timeLeft--;
@@ -461,9 +498,9 @@ function showTimeout() {
 function resetGame() {
   stopTimer();
   history = ['institutes'];
-  wrongClicks = 0;
   finished = false;
   trapped = false;
+  awaitingAnswer = false;
   timerEl.classList.add('hidden');
   timeoutOverlay.classList.add('hidden');
   startOverlay.classList.remove('hidden');
