@@ -2,15 +2,19 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Квест: найди «Режиссуру мультимедиа»</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html, body { height: 100%; }
+
   body {
     min-height: 100vh;
+    min-height: 100dvh;
     font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
     background: linear-gradient(135deg, #1e0a3c 0%, #5b2a86 50%, #1e3a8a 100%);
+    background-attachment: fixed;
     color: #f3eaff;
     display: flex;
     align-items: center;
@@ -150,32 +154,84 @@
   .overlay-card p { color: #e6d7f7; line-height: 1.65; margin-bottom: 24px; font-size: 16px; }
   .overlay-card button { width: 100%; padding: 14px; font-size: 17px; border-radius: 12px; }
 
-  /* ——— Мобильная адаптация ——— */
+  /* ——— ВЕРТИКАЛЬНЫЙ ТЕЛЕФОН (портрет) ——— */
   @media (max-width: 600px) {
-    body { padding: 10px; }
-    .wrap { padding: 18px 14px; border-radius: 18px; }
-    h1 { font-size: 22px; margin-bottom: 18px; }
-    .timer { font-size: 34px; min-width: 90px; padding: 3px 20px; }
-    .node-title { font-size: 16px; }
-    .tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .tile { padding: 16px 8px; font-size: 14px; min-height: 56px; border-radius: 12px; }
-    #message { font-size: 14px; }
-    .win { padding: 20px 6px; }
-    .win .emoji { font-size: 48px; }
-    .win h2 { font-size: 22px; }
-    .win .found, .win .trap-msg { font-size: 16px; padding: 12px 16px; }
-    .question { padding: 20px 14px; }
-    .question .q-text { font-size: 15px; }
-    .question input[type="text"] { font-size: 15px; }
-    .overlay-card { padding: 24px 18px; }
-    .overlay-card h2 { font-size: 21px; }
-    .overlay-card p { font-size: 15px; }
-  }
-
-  @media (max-width: 360px) {
-    .tiles { grid-template-columns: 1fr; }
+    body { padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+    .wrap {
+      padding: 16px 12px;
+      border-radius: 18px;
+    }
+    h1 { font-size: 21px; margin-bottom: 14px; }
+    .timer-wrap { margin-bottom: 14px; }
+    .timer { font-size: 32px; min-width: 84px; padding: 3px 18px; }
+    .node-title { font-size: 16px; margin-bottom: 12px; line-height: 1.4; }
+    .tiles { grid-template-columns: 1fr; gap: 10px; }
+    .tile {
+      padding: 15px 14px;
+      font-size: 15px;
+      min-height: 54px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1.35;
+      width: 100%;
+    }
+    #message { font-size: 14px; margin: 14px 0 2px; min-height: 20px; }
+    .controls { margin-top: 14px; }
+    button { padding: 12px 20px; font-size: 15px; border-radius: 12px; }
+    .win { padding: 14px 2px; }
+    .win .emoji { font-size: 46px; }
+    .win h2 { font-size: 20px; line-height: 1.35; }
+    .win p { font-size: 14px; }
+    .win .found, .win .trap-msg { font-size: 16px; padding: 12px 16px; margin: 8px 0 18px; }
     .win button { width: 100%; margin: 6px 0; }
     .win button + button { margin-left: 0; }
+    .question { padding: 18px 14px; border-radius: 14px; }
+    .question .q-text { font-size: 15px; }
+    .question input[type="text"] { font-size: 16px; padding: 14px 12px; }
+    .question button { width: 100%; }
+    .overlay { padding: 16px; }
+    .overlay-card { padding: 22px 18px; border-radius: 16px; }
+    .overlay-card .emoji { font-size: 48px; }
+    .overlay-card h2 { font-size: 21px; margin-bottom: 12px; }
+    .overlay-card p { font-size: 15px; margin-bottom: 18px; }
+    .overlay-card button { padding: 14px; font-size: 16px; }
+  }
+
+  /* ——— Очень узкие телефоны (ширина ≤ 360px) ——— */
+  @media (max-width: 360px) {
+    body { padding: 8px; }
+    .wrap { padding: 14px 10px; }
+    h1 { font-size: 19px; }
+    .timer { font-size: 28px; min-width: 76px; }
+    .tile { font-size: 14px; padding: 13px 12px; min-height: 50px; }
+    .node-title { font-size: 15px; }
+    .win .found, .win .trap-msg { font-size: 14px; padding: 10px 12px; }
+    .win h2 { font-size: 18px; }
+  }
+
+  /* ——— Низкие экраны: чтобы всё помещалось по высоте ——— */
+  @media (max-height: 640px) and (max-width: 600px) {
+    body { align-items: flex-start; padding-top: 12px; }
+    .wrap { padding: 12px 12px; }
+    h1 { font-size: 18px; margin-bottom: 8px; }
+    .timer-wrap { margin-bottom: 8px; }
+    .timer { font-size: 26px; padding: 2px 14px; min-width: 70px; }
+    .node-title { font-size: 14px; margin-bottom: 8px; }
+    .tiles { gap: 7px; }
+    .tile { padding: 10px 12px; min-height: 44px; font-size: 13px; }
+    #message { margin: 8px 0 0; min-height: 16px; font-size: 13px; }
+    .controls { margin-top: 8px; }
+    button { padding: 9px 16px; font-size: 13px; }
+    .win { padding: 8px 0; }
+    .win .emoji { font-size: 36px; }
+    .win .found, .win .trap-msg { padding: 8px 12px; margin: 6px 0 12px; font-size: 14px; }
+    .question { padding: 12px; }
+    .question .q-text { font-size: 14px; margin: 4px 0 10px; }
+    .question input[type="text"] { padding: 10px; font-size: 14px; margin-bottom: 10px; }
+    .overlay-card { padding: 16px 14px; }
+    .overlay-card .emoji { font-size: 36px; }
+    .overlay-card h2 { font-size: 18px; margin-bottom: 8px; }
+    .overlay-card p { font-size: 14px; margin-bottom: 12px; }
   }
 </style>
 </head>
