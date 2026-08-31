@@ -1,258 +1,263 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Квест: угадай термин мультимедиа</title>
-  <style>
-    :root {
-      --bg: #eef1f8;
-      --card: #ffffff;
-      --text: #1f2430;
-      --muted: #697086;
-      --accent: #5b5bd6;
-      --accent-dark: #4545b8;
-      --border: #e3e7f0;
-      --error: #d64545;
-      --success-bg: #eafaf0;
-      --success-border: #27ae60;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Проверка знаний</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    *,
-    *::before,
-    *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #ff7ad9;
+    --blue: #5aa7ff;
+    --purple: #8b5cf6;
+    --text: #f4f0ff;
+    --muted: #b9aed6;
+  }
 
-    html { -webkit-text-size-adjust: 100%; }
+  html, body { min-height: 100%; }
 
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100dvh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      line-height: 1.5;
-    }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #2b1055 0%, #7597de 50%, #ff6ec7 100%);
+    background-attachment: fixed;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-    .card {
-      background: var(--card);
-      border-radius: 20px;
-      box-shadow: 0 14px 44px rgba(31, 36, 48, 0.14);
-      padding: clamp(24px, 6vw, 40px);
-      width: 100%;
-      max-width: 460px;
-      text-align: center;
-    }
+  .glow { position: fixed; border-radius: 50%; filter: blur(90px); opacity: .5; z-index: 0; pointer-events: none; }
+  .glow-1 { width: 320px; height: 320px; background: var(--pink); top: -80px; left: -80px; }
+  .glow-2 { width: 360px; height: 360px; background: var(--blue); bottom: -100px; right: -60px; }
+  .glow-3 { width: 280px; height: 280px; background: var(--purple); top: 40%; left: 55%; }
 
-    .badge {
-      display: inline-block;
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: rgba(91, 91, 214, .1);
-      border-radius: 999px;
-      padding: 6px 14px;
-      margin-bottom: 16px;
-    }
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: 24px;
+    padding: clamp(20px, 5vw, 40px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 20px 60px rgba(43, 16, 85, .45);
+    text-align: center;
+  }
 
-    h1 {
-      font-size: clamp(20px, 5vw, 26px);
-      font-weight: 700;
-      line-height: 1.25;
-      margin-bottom: 8px;
-    }
+  h1 { font-size: clamp(20px, 5vw, 26px); }
 
-    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; }
+  .progress-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .progress-label { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .85; white-space: nowrap; }
+  .progress-bar { flex: 1; height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .18); overflow: hidden; }
+  .progress-fill { height: 100%; width: 33.3%; border-radius: 99px; background: linear-gradient(90deg, var(--pink), var(--purple), var(--blue)); transition: width .5s ease; }
 
-    .emoji-row {
-      display: flex;
-      justify-content: center;
-      gap: clamp(6px, 2vw, 12px);
-      font-size: clamp(44px, 14vw, 64px);
-      margin: 24px 0;
-      line-height: 1;
-    }
+  .emoji { font-size: clamp(40px, 9vw, 64px); letter-spacing: 6px; margin: 22px 0 8px; line-height: 1.4; }
 
-    .emoji-row span {
-      animation: pop .5s ease both;
-      cursor: default;
-    }
-    .emoji-row span:nth-child(2) { animation-delay: .1s; }
-    .emoji-row span:nth-child(3) { animation-delay: .2s; }
-    .emoji-row span:nth-child(4) { animation-delay: .3s; }
+  .question { font-size: clamp(15px, 4vw, 18px); line-height: 1.55; opacity: .95; margin-bottom: 18px; }
 
-    @keyframes pop {
-      from { transform: scale(0.5); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
-    }
+  .hint { font-size: 13px; opacity: .7; margin-bottom: 14px; }
 
-    .field {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-    }
+  .input-row { display: flex; gap: 10px; }
 
-    input[type="text"] {
-      flex: 1;
-      min-width: 0;
-      font: inherit;
-      font-size: 17px;
-      padding: 14px 16px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      background: #fafbfe;
-      color: var(--text);
-      outline: none;
-      transition: border-color .15s, box-shadow .15s;
-      -webkit-appearance: none;
-      appearance: none;
-    }
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 16px;
+    font-size: 16px;
+    border-radius: 14px;
+    border: 2px solid rgba(255, 255, 255, .3);
+    background: rgba(255, 255, 255, .12);
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+  }
+  input::placeholder { color: rgba(255, 255, 255, .55); }
+  input:focus { border-color: var(--blue); background: rgba(255, 255, 255, .16); box-shadow: 0 0 0 4px rgba(79, 172, 254, .25); }
+  input.error { border-color: #ff5d7a; animation: shake .35s; }
 
-    input[type="text"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(91, 91, 214, .15);
-      background: #fff;
-    }
+  button {
+    padding: 14px 22px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    min-height: 48px;
+    transition: transform .15s, box-shadow .2s, opacity .2s;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255, 110, 199, .35); }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .6; cursor: default; transform: none; }
 
-    button {
-      font: inherit;
-      font-weight: 600;
-      font-size: 17px;
-      color: #fff;
-      background: var(--accent);
-      border: none;
-      border-radius: 12px;
-      padding: 14px 20px;
-      cursor: pointer;
-      min-height: 48px;
-      flex-shrink: 0;
-      touch-action: manipulation;
-      transition: background .15s, transform .1s;
-    }
+  .feedback {
+    margin-top: 16px;
+    font-size: clamp(15px, 4vw, 17px);
+    font-weight: 600;
+    min-height: 26px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .35s, transform .35s;
+  }
+  .feedback.show { opacity: 1; transform: none; }
+  .feedback.success { color: #7dffb0; }
+  .feedback.fail { color: #ffb3c1; }
 
-    button:hover  { background: var(--accent-dark); }
-    button:active { transform: scale(.97); }
+  .next-btn { margin-top: 18px; display: none; }
 
-    .msg {
-      display: none;
-      margin-top: 18px;
-      padding: 16px;
-      border-radius: 14px;
-      font-size: 15px;
-      text-align: left;
-    }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
 
-    .msg.error {
-      color: var(--error);
-      background: #fdf0f0;
-      border: 1px solid #f3caca;
-    }
-
-    .msg.success {
-      background: var(--success-bg);
-      border: 2px solid var(--success-border);
-      color: #14532d;
-      animation: fadeIn .45s ease;
-    }
-
-    .msg.success .word {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 2px 10px;
-      border-radius: 8px;
-      font-weight: 700;
-      color: #15803d;
-      background: #d9f5e3;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .msg.show { display: block; }
-
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-
-    @media (max-width: 360px) {
-      .field { flex-direction: column; }
-      button { width: 100%; }
-    }
-  </style>
+  @media (max-width: 400px) {
+    .input-row { flex-direction: column; }
+    button { width: 100%; }
+  }
+</style>
 </head>
 <body>
-  <main class="card" role="main">
-    <span class="badge">Квест · мультимедиа</span>
-    <h1>Угадай термин по эмодзи</h1>
-    <p class="subtitle">Какой термин мультимедиа скрывается за этими символами?</p>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="glow glow-3"></div>
 
-    <div class="emoji-row" aria-hidden="true">
-      <span>👆</span><span>🖱️</span><span>💬</span><span>🎮</span>
+  <div class="card">
+    <div class="progress-wrap">
+      <span class="progress-label" id="progressLabel">Уровень 1/3</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
 
-    <form id="quiz" novalidate>
-      <label class="visually-hidden" for="answer">Введи термин</label>
-      <div class="field">
-        <input type="text" id="answer" name="answer" placeholder="Твой ответ…"
-               autocomplete="off" autocapitalize="off" spellcheck="false"
-               inputmode="text" maxlength="40">
-        <button type="submit" id="submit">Проверить</button>
-      </div>
-      <p class="msg error" id="error" role="alert">Не угадал.</p>
-    </form>
+    <h1 id="levelTitle">Уровень 1</h1>
+    <div class="emoji" id="emojiBox">👆 🖱️ 💬 🔄</div>
+    <p class="question" id="questionText">Какой термин мультимедиа скрывается за этими эмодзи?</p>
+    <p class="hint" id="hintText">Введи ответ и нажми «Проверить»</p>
 
-    <div class="msg success" id="success" role="status">
-      <p><strong>Правильный ответ.</strong> Ты близок к цели.</p>
-      <p>Запомни слово: <span class="word">флюксусная</span></p>
+    <div class="input-row" id="inputRow">
+      <input id="answerInput" type="text" placeholder="Твой ответ…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button id="checkBtn">Проверить</button>
     </div>
-  </main>
 
-  <script>
-    const correct = ["интерактивность", "интерактив", "интерактивности"];
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn">Дальше →</button>
+  </div>
 
-    const form = document.getElementById("quiz");
-    const input = document.getElementById("answer");
-    const error = document.getElementById("error");
-    const success = document.getElementById("success");
-    const submitBtn = document.getElementById("submit");
+<script>
+  const levels = [
+    { emoji: '👆 🖱️ 💬 🔄', answers: ['интерактивность', 'интерактив', 'интерактивности'] },
+    { emoji: '🖥️ 🥽 ✨ 🌆', answers: ['виртуальная реальность', 'виртуальной реальности', 'виртуальную реальность', 'виртуальная', 'виар', 'vr'] },
+    { emoji: '🎮 👾 🕹️ 📺', answers: ['видеоигра', 'видео игра', 'видеоигру', 'видео игру', 'игра', 'компьютерная игра', 'компьютерная'] }
+  ];
 
-    const normalize = (value) =>
-      value.toLowerCase()
-           .replace(/ё/g, "е")
-           .replace(/[^\p{L}\p{N}]/gu, "")
-           .trim();
+  let current = 0;
 
-    const showSuccess = () => {
-      error.classList.remove("show");
-      success.classList.add("show");
-      input.disabled = true;
-      submitBtn.disabled = true;
-      success.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    };
+  const titleEl = document.getElementById('levelTitle');
+  const emojiBox = document.getElementById('emojiBox');
+  const questionText = document.getElementById('questionText');
+  const hintText = document.getElementById('hintText');
+  const progressLabel = document.getElementById('progressLabel');
+  const progressFill = document.getElementById('progressFill');
+  const inputRow = document.getElementById('inputRow');
+  const input = document.getElementById('answerInput');
+  const checkBtn = document.getElementById('checkBtn');
+  const feedback = document.getElementById('feedback');
+  const nextBtn = document.getElementById('nextBtn');
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (correct.includes(normalize(input.value))) {
-        showSuccess();
-      } else {
-        success.classList.remove("show");
-        error.classList.add("show");
-        input.focus();
-        input.select();
-      }
-    });
-  </script>
+  function normalize(s) {
+    return s.toLowerCase()
+      .replace(/ё/g, 'е')
+      .replace(/[^a-zа-я0-9\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function renderLevel() {
+    const level = levels[current];
+    titleEl.textContent = 'Уровень ' + (current + 1);
+    progressLabel.textContent = 'Уровень ' + (current + 1) + '/' + levels.length;
+    progressFill.style.width = ((current + 1) / levels.length * 100) + '%';
+    emojiBox.textContent = level.emoji;
+    questionText.textContent = 'Какой термин мультимедиа скрывается за этими эмодзи?';
+    hintText.style.display = '';
+    inputRow.style.display = '';
+    input.value = '';
+    input.disabled = false;
+    checkBtn.disabled = false;
+    nextBtn.textContent = 'Дальше →';
+    nextBtn.style.display = 'none';
+    feedback.classList.remove('show', 'success', 'fail');
+    feedback.textContent = '';
+    input.focus();
+  }
+
+  function showFeedback(text, type) {
+    feedback.textContent = text;
+    feedback.classList.remove('success', 'fail');
+    feedback.classList.add('show', type);
+  }
+
+  function correct() {
+    showFeedback('Правильный ответ. Ты близок к цели.', 'success');
+    input.disabled = true;
+    checkBtn.disabled = true;
+    if (current < levels.length - 1) {
+      nextBtn.style.display = 'inline-block';
+    } else {
+      finishQuest();
+    }
+  }
+
+  function wrong() {
+    showFeedback('Не угадал.', 'fail');
+    input.classList.add('error');
+    setTimeout(() => input.classList.remove('error'), 400);
+    input.focus();
+    input.select();
+  }
+
+  function checkAnswer() {
+    const value = normalize(input.value);
+    if (!value) return;
+    if (levels[current].answers.some(a => normalize(a) === value)) {
+      correct();
+    } else {
+      wrong();
+    }
+  }
+
+  function finishQuest() {
+    titleEl.textContent = '🎉 Квест пройден!';
+    questionText.textContent = 'В этот раз ты победил. Запомни слово и его форму: полного';
+    hintText.style.display = 'none';
+    inputRow.style.display = 'none';
+    feedback.classList.remove('show', 'success', 'fail');
+    feedback.textContent = '';
+    nextBtn.textContent = '🔄 Пройти заново';
+    nextBtn.style.display = 'inline-block';
+  }
+
+  checkBtn.addEventListener('click', checkAnswer);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkAnswer();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (current < levels.length - 1) {
+      current++;
+    } else {
+      current = 0;
+    }
+    renderLevel();
+  });
+
+  renderLevel();
+</script>
 </body>
 </html>
