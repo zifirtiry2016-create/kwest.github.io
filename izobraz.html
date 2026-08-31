@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>360° Панорама</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #080810;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #viewer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: #11111b;
+      touch-action: none;
+    }
+
+    #panorama {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      height: 100vh;
+      width: auto;
+      max-width: none;
+      transform: translate(-50%, -50%);
+      user-select: none;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    .top-panel {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .label,
+    .status {
+      padding: 9px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      background: rgba(10, 10, 20, 0.58);
+      backdrop-filter: blur(10px);
+      font-size: 14px;
+    }
+
+    .status {
+      color: #d9d9e7;
+      text-align: right;
+    }
+
+    .controls {
+      position: fixed;
+      z-index: 5;
+      bottom: max(22px, env(safe-area-inset-bottom));
+      left: 50%;
+      width: min(420px, calc(100% - 32px));
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    #startButton {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px 18px;
+      color: white;
+      background: linear-gradient(135deg, #6d4aff, #a24cff);
+      box-shadow: 0 10px 30px rgba(108, 74, 255, 0.38);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #startButton:active {
+      transform: scale(0.98);
+    }
+
+    .hint {
+      margin: 12px 10px 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error {
+      color: #ffb9b9;
+    }
+  </style>
+</head>
+
+<body>
+  <main id="viewer">
+    <img
+      id="panorama"
+      src="https://i.ibb.co/1fN318np/Yu-BIL360-1.png"
+      alt="Панорамное изображение"
+    />
+  </main>
+
+  <div class="top-panel">
+    <div class="label">360°</div>
+    <div class="status" id="status">Загрузка панорамы…</div>
+  </div>
+
+  <div class="controls">
+    <button id="startButton">Включить 360°-режим</button>
+    <p class="hint" id="hint">
+      Нажми кнопку, разреши доступ к датчикам и поворачивайся вместе с телефоном.
+      Если датчики недоступны, проведи пальцем по экрану.
+    </p>
+  </div>
+
+  <script>
+    const viewer = document.getElementById("viewer");
+    const panorama = document.getElementById("panorama");
+    const startButton = document.getElementById("startButton");
+    const status = document.getElementById("status");
+    const hint = document.getElementById("hint");
+
+    let imageWidth = 0;
+    let imageHeight = 0;
+    let currentX = 0;
+    let dragStartX = 0;
+    let dragStartPanoramaX = 0;
+    let isDragging = false;
+
+    let sensorEnabled = false;
+    let startingAngle = null;
+    let lastAngle = null;
+    let accumulatedAngle = 0;
+    let startPanoramaX = 0;
+
+    function imageScale() {
+      return window.innerHeight / imageHeight;
+    }
+
+    function scaledImageWidth() {
+      return imageWidth * imageScale();
+    }
+
+    function maxShift() {
+      return Math.max(0, (scaledImageWidth() - window.innerWidth) / 2);
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function render() {
+      const limit = maxShift();
+      currentX = clamp(currentX, -limit, limit);
+
+      panorama.style.transform =
+        `translate(calc(-50% + ${currentX}px), -50%)`;
+    }
+
+    panorama.addEventListener("load", () => {
+      imageWidth = panorama.naturalWidth;
+      imageHeight = panorama.naturalHeight;
+
+      status.textContent = "Можно смотреть";
+      render();
+    });
+
+    panorama.addEventListener("error", () => {
+      status.textContent = "Не удалось загрузить изображение";
+      status.classList.add("error");
+    });
+
+    window.addEventListener("resize", render);
+
+    viewer.addEventListener("pointerdown", (event) => {
+      isDragging = true;
+      dragStartX = event.clientX;
+      dragStartPanoramaX = currentX;
+
+      viewer.setPointerCapture(event.pointerId);
+    });
+
+    viewer.addEventListener("pointermove", (event) => {
+      if (!isDragging) return;
+
+      const difference = event.clientX - dragStartX;
+      currentX = dragStartPanoramaX + difference;
+      render();
+    });
+
+    function endDragging(event) {
+      if (!isDragging) return;
+
+      isDragging = false;
+
+      if (viewer.hasPointerCapture(event.pointerId)) {
+        viewer.releasePointerCapture(event.pointerId);
+      }
+    }
+
+    viewer.addEventListener("pointerup", endDragging);
+    viewer.addEventListener("pointercancel", endDragging);
+
+    function normalizeAngleDifference(current, previous) {
+      let difference = current - previous;
+
+      if (difference > 180) difference -= 360;
+      if (difference < -180) difference += 360;
+
+      return difference;
+    }
+
+    function handleOrientation(event) {
+      if (!sensorEnabled || event.alpha === null) return;
+
+      const currentAngle = event.alpha;
+
+      if (startingAngle === null) {
+        startingAngle = currentAngle;
+        lastAngle = currentAngle;
+        startPanoramaX = currentX;
+        status.textContent = "360°-режим включён";
+        return;
+      }
+
+      accumulatedAngle += normalizeAngleDifference(currentAngle, lastAngle);
+      lastAngle = currentAngle;
+
+      const fullPanoramaWidth = scaledImageWidth();
+      const pixelsPerDegree = fullPanoramaWidth / 360;
+
+      currentX = startPanoramaX - accumulatedAngle * pixelsPerDegree;
+      render();
+    }
+
+    async function enableSensors() {
+      try {
+        if (
+          typeof DeviceOrientationEvent !== "undefined" &&
+          typeof DeviceOrientationEvent.requestPermission === "function"
+        ) {
+          const permission = await DeviceOrientationEvent.requestPermission();
+
+          if (permission !== "granted") {
+            throw new Error("Разрешение отклонено");
+          }
+        }
+
+        sensorEnabled = true;
+        startingAngle = null;
+        lastAngle = null;
+        accumulatedAngle = 0;
+
+        window.addEventListener("deviceorientation", handleOrientation, true);
+
+        startButton.classList.add("hidden");
+        hint.textContent = "Поворачивайся вместе с телефоном. Также можно двигать панораму пальцем.";
+        status.textContent = "Поверни телефон";
+
+      } catch (error) {
+        status.textContent = "Датчики не включены";
+        status.classList.add("error");
+        hint.textContent = "Разрешение не получено. Панораму всё равно можно двигать пальцем по экрану.";
+      }
+    }
+
+    startButton.addEventListener("click", enableSensors);
+  </script>
+</body>
+</html>
