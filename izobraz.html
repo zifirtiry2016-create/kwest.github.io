@@ -2,12 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>360° Панорама</title>
-
   <style>
     * {
       box-sizing: border-box;
@@ -47,9 +43,9 @@
       pointer-events: none;
       -webkit-user-drag: none;
       will-change: transform;
-      transform: translate3d(-50%, -50%, 0) scale(1.22);
+      transform: translate3d(-50%, -50%, 0) scale(1.18);
       transform-origin: center center;
-      height: 108vh;
+      height: 112vh;
     }
 
     .top-panel {
@@ -86,7 +82,28 @@
       color: #ffb9b9;
     }
 
-    .start-screen {
+    .word-button {
+      position: fixed;
+      z-index: 12;
+      top: max(64px, env(safe-area-inset-top) + 44px);
+      right: 14px;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: #fff;
+      background: linear-gradient(135deg, #24b47e, #12a6ff);
+      box-shadow: 0 10px 30px rgba(18, 166, 255, 0.32);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .word-button:active {
+      transform: scale(0.98);
+    }
+
+    .start-screen,
+    .modal {
       position: fixed;
       inset: 0;
       z-index: 20;
@@ -97,7 +114,8 @@
       backdrop-filter: blur(12px);
     }
 
-    .start-card {
+    .start-card,
+    .modal-card {
       width: min(420px, 100%);
       padding: 28px 20px 22px;
       border: 1px solid rgba(255, 255, 255, 0.18);
@@ -107,20 +125,23 @@
       text-align: center;
     }
 
-    .start-card h1 {
+    .start-card h1,
+    .modal-card h2 {
       margin: 0;
       font-size: clamp(24px, 6.5vw, 34px);
       line-height: 1.14;
     }
 
-    .start-card p {
+    .start-card p,
+    .modal-card p {
       margin: 14px 0 20px;
       color: #dedbea;
       font-size: 15px;
       line-height: 1.45;
     }
 
-    #startButton {
+    #startButton,
+    #checkButton {
       width: 100%;
       padding: 15px 16px;
       border: 0;
@@ -133,7 +154,8 @@
       cursor: pointer;
     }
 
-    #startButton:active {
+    #startButton:active,
+    #checkButton:active {
       transform: scale(0.98);
     }
 
@@ -155,14 +177,42 @@
       pointer-events: none;
     }
 
+    .modal {
+      display: none;
+      z-index: 30;
+    }
+
+    .modal input {
+      width: 100%;
+      margin: 0 0 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .modal input::placeholder {
+      color: rgba(255,255,255,0.55);
+    }
+
+    .feedback {
+      margin-top: 14px;
+      min-height: 24px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
     .hidden {
       display: none;
     }
 
     @media (orientation: landscape) {
       #panorama {
-        height: 120vh;
-        transform: translate3d(-50%, -50%, 0) scale(1.18);
+        height: 124vh;
+        transform: translate3d(-50%, -50%, 0) scale(1.14);
       }
 
       .status {
@@ -171,7 +221,6 @@
     }
   </style>
 </head>
-
 <body>
   <main id="viewer">
     <img id="panorama" src="YuBIL360.png" alt="Панорамное изображение" />
@@ -181,6 +230,8 @@
     <div class="label">360°</div>
     <div class="status" id="status">Загрузка панорамы…</div>
   </div>
+
+  <button class="word-button" id="wordButton">проверить слово</button>
 
   <div class="bottom-hint" id="hint">
     После запуска можно поворачивать телефон, двигать панораму пальцем и приближать двумя пальцами.
@@ -194,6 +245,16 @@
     </div>
   </section>
 
+  <section class="modal" id="wordModal">
+    <div class="modal-card">
+      <h2>Введи слово</h2>
+      <p>Подумай внимательно о том, что ты ищешь.</p>
+      <input id="wordInput" type="text" placeholder="Напиши ответ" autocomplete="off" />
+      <button id="checkButton">Проверить</button>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </section>
+
   <script>
     const viewer = document.getElementById("viewer");
     const panorama = document.getElementById("panorama");
@@ -201,6 +262,11 @@
     const startScreen = document.getElementById("startScreen");
     const status = document.getElementById("status");
     const hint = document.getElementById("hint");
+    const wordButton = document.getElementById("wordButton");
+    const wordModal = document.getElementById("wordModal");
+    const wordInput = document.getElementById("wordInput");
+    const checkButton = document.getElementById("checkButton");
+    const feedback = document.getElementById("feedback");
 
     let imageWidth = 0;
     let imageHeight = 0;
@@ -208,22 +274,22 @@
     let currentX = 0;
     let targetX = 0;
 
-    let scale = 1.22;
-    let targetScale = 1.22;
+    let currentScale = 1.18;
+    let targetScale = 1.18;
     const minScale = 1.0;
-    const maxScale = 1.8;
+    const maxScale = 1.9;
 
     let sensorEnabled = false;
     let sensorReady = false;
     let previousHeading = null;
-    let targetHeading = 0;
+    let accumulatedRotation = 0;
 
     let isDragging = false;
     let dragStartX = 0;
     let dragStartPanoramaX = 0;
 
     let pinchStartDistance = 0;
-    let pinchStartScale = 1.22;
+    let pinchStartScale = 1.18;
 
     const smoothing = 0.11;
     const maxAngleJump = 25;
@@ -233,36 +299,36 @@
       return Math.max(min, Math.min(max, value));
     }
 
-    function getHeightForFit() {
-      return Math.min(window.innerHeight * 1.22, window.innerHeight * 1.18 * (window.innerWidth > window.innerHeight ? 1 : 1));
+    function isLandscape() {
+      return window.innerWidth > window.innerHeight;
+    }
+
+    function getFitHeight() {
+      return isLandscape() ? window.innerHeight * 1.24 : window.innerHeight * 1.12;
     }
 
     function getScaledWidth() {
       if (!imageWidth || !imageHeight) return 0;
-      const fittedHeight = window.innerHeight * 1.22;
-      return imageWidth * (fittedHeight / imageHeight) * scale;
+      return imageWidth * (getFitHeight() / imageHeight) * currentScale;
     }
 
     function getMaxShift() {
       return Math.max(0, (getScaledWidth() - window.innerWidth) / 2);
     }
 
-    function applyTransform() {
+    function renderLoop() {
+      currentScale += (targetScale - currentScale) * 0.12;
+      if (Math.abs(targetScale - currentScale) < 0.001) currentScale = targetScale;
+
       const limit = getMaxShift();
       targetX = clamp(targetX, -limit, limit);
+
       currentX += (targetX - currentX) * smoothing;
+      if (Math.abs(targetX - currentX) < 0.05) currentX = targetX;
 
-      if (Math.abs(targetX - currentX) < 0.05) {
-        currentX = targetX;
-      }
-
-      const displayScale = scale;
       panorama.style.transform =
-        `translate3d(calc(-50% + ${currentX}px), -50%, 0) scale(${displayScale})`;
-    }
+        `translate3d(calc(-50% + ${currentX}px), -50%, 0) scale(${currentScale})`;
 
-    function renderLoop() {
-      applyTransform();
       requestAnimationFrame(renderLoop);
     }
 
@@ -274,11 +340,9 @@
       if (typeof event.webkitCompassHeading === "number") {
         return event.webkitCompassHeading;
       }
-
       if (typeof event.alpha === "number") {
         return 360 - event.alpha;
       }
-
       return null;
     }
 
@@ -310,17 +374,15 @@
       }
 
       previousHeading = heading;
-      targetHeading += difference;
+      accumulatedRotation += difference;
 
       const pixelsPerDegree = (getScaledWidth() / 360) * sensitivity;
-      setTargetX(-targetHeading * pixelsPerDegree);
+      setTargetX(-accumulatedRotation * pixelsPerDegree);
     }
 
     function distanceBetweenTouches(e) {
       const [a, b] = e.touches;
-      const dx = a.clientX - b.clientX;
-      const dy = a.clientY - b.clientY;
-      return Math.hypot(dx, dy);
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
     }
 
     viewer.addEventListener("touchstart", (e) => {
@@ -394,7 +456,7 @@
         sensorEnabled = true;
         sensorReady = false;
         previousHeading = null;
-        targetHeading = 0;
+        accumulatedRotation = 0;
 
         window.addEventListener("deviceorientation", onOrientation, true);
 
@@ -412,9 +474,43 @@
 
     startButton.addEventListener("click", startExperience);
 
+    wordButton.addEventListener("click", () => {
+      wordModal.style.display = "grid";
+      feedback.textContent = "";
+      wordInput.value = "";
+      wordInput.focus();
+    });
+
+    function closeWordModal() {
+      wordModal.style.display = "none";
+    }
+
+    function checkWord() {
+      const value = wordInput.value.trim().toLowerCase();
+      if (value === "гезамткунстверк") {
+        feedback.textContent = "Верно! Ты просто умничка :3! Лови поцелуйчик!";
+        feedback.style.color = "#9effc1";
+        setTimeout(closeWordModal, 1200);
+      } else {
+        feedback.textContent = "Смотри внимательнее >:(";
+        feedback.style.color = "#ffb9b9";
+        setTimeout(() => {
+          closeWordModal();
+        }, 1200);
+      }
+    }
+
+    checkButton.addEventListener("click", checkWord);
+    wordInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkWord();
+      if (e.key === "Escape") closeWordModal();
+    });
+
+    wordModal.addEventListener("click", (e) => {
+      if (e.target === wordModal) closeWordModal();
+    });
+
     requestAnimationFrame(renderLoop);
   </script>
 </body>
 </html>
-
-
