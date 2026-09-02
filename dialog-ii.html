@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Диалог с ИИ — квест</title>
+<style>
+  :root{
+    --bg1:#ffe4f0; --bg2:#d9ebff; --bg3:#e6ddff;
+    --card:rgba(255,255,255,.78);
+    --border:rgba(160,150,230,.35);
+    --text:#2a2547;
+    --muted:#8079a8;
+    --ai-bubble:#ffffff;
+    --ai-border:#f0d9ff;
+    --user-bubble:linear-gradient(135deg,#5aa7ff,#8f6bff);
+    --user-text:#fff;
+    --btn:linear-gradient(135deg,#ff6f9d,#6b8bff);
+    --danger:#ff3b5c;
+    --success:#2fd37a;
+    --shadow:0 18px 50px rgba(120,90,200,.22);
+    --input-bg:rgba(255,255,255,.92);
+    --avatar-bg:linear-gradient(135deg,#ff9ec0,#7fb5ff);
+    --avatar-glow:0 0 0 rgba(255,120,170,.0);
+  }
+  body.evil{
+    --bg1:#2c0508; --bg2:#4d0a0f; --bg3:#1f0305;
+    --card:rgba(38,5,8,.82);
+    --border:rgba(255,80,80,.35);
+    --text:#ffe9e9;
+    --muted:#ffb0b0;
+    --ai-bubble:rgba(95,12,16,.92);
+    --ai-border:rgba(255,90,90,.45);
+    --user-bubble:linear-gradient(135deg,#e6362f,#8f0f12);
+    --user-text:#fff;
+    --btn:linear-gradient(135deg,#ff4444,#b00f12);
+    --danger:#ff2e2e;
+    --success:#ffb02e;
+    --shadow:0 18px 55px rgba(200,0,0,.35);
+    --input-bg:rgba(70,10,12,.9);
+    --avatar-bg:linear-gradient(135deg,#ff4d4d,#8f0f12);
+    --avatar-glow:0 0 22px rgba(255,40,40,.85);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  [hidden]{display:none!important}
+  body{
+    font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2) 50%,var(--bg3));
+    background-attachment:fixed;
+    color:var(--text);
+    display:flex;align-items:center;justify-content:center;
+    padding:14px;
+    transition:background .8s ease,color .6s ease;
+  }
+  .app{
+    width:min(500px,100%);
+    height:min(840px,100dvh);
+    background:var(--card);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    border:1px solid var(--border);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    display:flex;flex-direction:column;
+    overflow:hidden;position:relative;
+    transition:background .6s ease,box-shadow .6s ease,border-color .6s ease;
+  }
+  @media (max-width:540px){
+    body{padding:0}
+    .app{width:100%;height:100dvh;border-radius:0;border:none;box-shadow:none}
+  }
+
+  .screen{flex:1;min-height:0;display:flex;flex-direction:column}
+  .screen[hidden]{display:none}
+
+  /* ===== стартовый экран / выход ===== */
+  .center-screen{justify-content:center;align-items:center;text-align:center;gap:14px;padding:26px;overflow-y:auto}
+  .ai-big{font-size:72px;line-height:1;filter:drop-shadow(0 8px 18px rgba(120,90,200,.3));animation:float 3s ease-in-out infinite}
+  .center-screen h1{font-size:26px;line-height:1.25;background:linear-gradient(90deg,#ff5f96,#6b8bff,#9d6bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .intro{color:var(--muted);font-size:16px;max-width:340px;line-height:1.5}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+  .btn{
+    border:none;cursor:pointer;font-family:inherit;
+    font-size:16px;font-weight:700;color:#fff;
+    background:var(--btn);
+    padding:13px 24px;border-radius:14px;
+    min-height:48px;touch-action:manipulation;
+    box-shadow:0 8px 20px rgba(0,0,0,.18);
+    transition:transform .15s ease,filter .2s ease;
+  }
+  .btn:active{transform:scale(.96)}
+  .btn-ghost{background:transparent;color:var(--muted);box-shadow:none;border:2px solid var(--border)}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+  /* ===== чат ===== */
+  .chat-screen{padding:0}
+  .chat-header{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    background:inherit;
+  }
+  .avatar{
+    width:46px;height:46px;border-radius:50%;flex:none;
+    background:var(--avatar-bg);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    box-shadow:var(--avatar-glow);
+    animation:avatarPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes avatarPulse{0%,100%{box-shadow:var(--avatar-glow)}50%{box-shadow:0 0 30px rgba(255,60,60,.55)}}
+  .who{flex:1;min-width:0}
+  .name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .status{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qdots{display:flex;gap:5px;align-items:center;flex:none}
+  .qdots span{
+    width:23px;height:23px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;
+    color:var(--muted);
+    border:1.5px solid var(--border);
+    background:transparent;transition:.3s;
+  }
+  .qdots span.cur{background:var(--btn);color:#fff;border-color:transparent;transform:scale(1.12)}
+  .qdots span.done{background:var(--success);color:#fff;border-color:transparent}
+
+  .messages{
+    flex:1;min-height:0;overflow-y:auto;
+    padding:14px 16px;
+    display:flex;flex-direction:column;gap:10px;
+    scroll-behavior:smooth;
+  }
+  .msg{
+    max-width:82%;
+    padding:10px 14px;
+    border-radius:18px;
+    line-height:1.45;
+    font-size:16px;
+    white-space:pre-wrap;word-break:break-word;
+    animation:pop .28s ease both;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+  .msg.ai{align-self:flex-start;background:var(--ai-bubble);border:1px solid var(--ai-border);color:var(--text);border-bottom-left-radius:5px}
+  .msg.user{align-self:flex-end;background:var(--user-bubble);color:var(--user-text);border-bottom-right-radius:5px;font-weight:600}
+  .msg.bad{animation:pop .28s ease both,msgRed .45s ease}
+  @keyframes msgRed{0%{background:#ff5b6e;color:#fff}100%{}}
+
+  .attempts{
+    display:flex;justify-content:flex-end;align-items:center;gap:6px;
+    padding:6px 16px 0;font-size:11px;color:var(--muted);
+  }
+  .attempts b{font-weight:800;font-size:12px;color:var(--text)}
+  .attempts i{width:11px;height:11px;border-radius:50%;background:var(--success);display:inline-block;transition:.3s}
+  .attempts i.lost{background:var(--danger);opacity:.35;transform:scale(.75)}
+
+  .answer-form{
+    display:flex;gap:10px;
+    padding:10px 16px;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  }
+  .answer-form input{
+    flex:1;min-width:0;
+    font-family:inherit;font-size:16px;
+    color:var(--text);
+    background:var(--input-bg);
+    border:2px solid var(--border);
+    border-radius:14px;
+    padding:13px 16px;
+    min-height:48px;
+    outline:none;
+    transition:border-color .2s,box-shadow .2s;
+  }
+  .answer-form input:focus{border-color:var(--btn);box-shadow:0 0 0 3px rgba(255,111,157,.18)}
+  .answer-form input:disabled{opacity:.5}
+  .answer-form input::placeholder{color:var(--muted)}
+  .send{
+    border:none;cursor:pointer;
+    width:52px;height:52px;flex:none;
+    border-radius:14px;font-size:20px;color:#fff;
+    background:var(--btn);
+    touch-action:manipulation;
+  }
+  .send:active{transform:scale(.92)}
+  .send:disabled{opacity:.5}
+
+  .restart-area{display:flex;justify-content:center;padding:10px 16px calc(14px + env(safe-area-inset-bottom))}
+
+  /* ===== тряска ===== */
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px)}
+    20%,80%{transform:translateX(5px)}
+    30%,50%,70%{transform:translateX(-9px)}
+    40%,60%{transform:translateX(9px)}
+  }
+  .shake{animation:shake .55s cubic-bezier(.36,.07,.19,.97) both}
+
+  /* ===== экран выключения ===== */
+  .app.dying{opacity:0;transform:scaleY(.02);filter:brightness(4) saturate(0);transition:all .9s ease;pointer-events:none}
+  .poweroff{
+    position:fixed;inset:0;z-index:60;
+    background:#050505;
+    display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:20px;
+    opacity:0;pointer-events:none;transition:opacity .7s ease;
+  }
+  .poweroff.on{opacity:1;pointer-events:auto}
+  .power-text{
+    font-family:'Courier New',monospace;
+    font-size:clamp(28px,7vw,44px);font-weight:800;
+    color:#ff2e2e;line-height:1.2;
+    text-shadow:0 0 18px rgba(255,30,30,.7);
+    letter-spacing:1px;
+    animation:blinkText 2s steps(2) infinite;
+  }
+  @keyframes blinkText{50%{opacity:.55}}
+  .power-sub{
+    font-family:'Courier New',monospace;color:#8a8a8a;
+    font-size:13px;margin-top:12px;letter-spacing:2px;text-transform:uppercase;
+  }
+  .power-btn{
+    margin-top:34px;border:none;cursor:pointer;
+    font-family:inherit;font-size:15px;font-weight:700;color:#0a0a0a;
+    background:#e8e8e8;padding:14px 26px;border-radius:40px;
+    display:inline-flex;align-items:center;gap:8px;
+    box-shadow:0 0 24px rgba(255,255,255,.25);
+  }
+  .power-btn:active{transform:scale(.95)}
+
+  @media (max-width:380px){
+    .qdots span{width:20px;height:20px;font-size:10px}
+    .avatar{width:40px;height:40px;font-size:22px}
+    .center-screen h1{font-size:22px}
+  }
+</style>
+</head>
+<body>
+
+  <div class="app" id="app">
+
+    <!-- ===== стартовый экран ===== -->
+    <section class="screen center-screen" id="screen-start">
+      <div class="ai-big">🤖</div>
+      <h1>ИИ вызывает тебя на дуэль</h1>
+      <p class="intro">Тебе предстоит ответить на 5 наисложнейших вопросов, ты готов?</p>
+      <div class="btn-row">
+        <button class="btn" id="btn-yes">Да — начать игру</button>
+        <button class="btn btn-ghost" id="btn-exit">Нет — выйти</button>
+      </div>
+    </section>
+
+    <!-- ===== экран выхода ===== -->
+    <section class="screen center-screen" id="screen-exit" hidden>
+      <div class="ai-big">🥲</div>
+      <h1>Ну и правильно...</h1>
+      <p class="intro">Я же говорил — это не для слабаков. Заходи, когда будешь готов.</p>
+      <div class="btn-row">
+        <button class="btn" id="btn-back">Хочу попробовать ещё раз</button>
+      </div>
+    </section>
+
+    <!-- ===== экран чата ===== -->
+    <section class="screen chat-screen" id="screen-chat" hidden>
+      <div class="chat-header">
+        <div class="avatar" id="avatar">🤖</div>
+        <div class="who">
+          <div class="name">ИИ-экзаменатор</div>
+          <div class="status" id="ai-status">добрый ИИ 😊</div>
+        </div>
+        <div class="qdots" id="qdots">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+        </div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="attempts" id="attempts">
+        <span>Попытки на вопрос:</span>&nbsp;<b id="attempts-n">3</b>
+        <i></i><i></i><i></i>
+      </div>
+
+      <form class="answer-form" id="answer-form">
+        <input id="answer-input" type="text" autocomplete="off" placeholder="Твой ответ..." disabled>
+        <button class="send" id="btn-send" type="submit" disabled>➤</button>
+      </form>
+
+      <div class="restart-area" id="restart-area" hidden>
+        <button class="btn" id="btn-again">Пройти ещё раз</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== экран выключения ===== -->
+  <div class="poweroff" id="poweroff">
+    <div>
+      <div class="power-text">Ты не достоин этой игры</div>
+      <div class="power-sub">система отключена</div>
+      <button class="power-btn" id="power-btn">⏻&nbsp; Включить заново</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var app = $('app');
+  var messages = $('messages');
+  var input = $('answer-input');
+  var form = $('answer-form');
+  var qdots = $('qdots').children;
+  var attemptsBox = $('attempts');
+  var attemptsN = $('attempts-n');
+  var attemptDots = attemptsBox.querySelectorAll('i');
+
+  var QUIZ = [
+    {
+      q: 'Знаете ли вы фамилию режиссёра, радиопостановка которого вызвала настолько бурную реакцию, что около 1 млн человек поверили в нападение инопланетян?',
+      check: function(s){
+        var c = compact(s);
+        return ['уэллс','wells','орсонуэллс','orsonwells'].indexOf(c) !== -1;
+      }
+    },
+    {
+      q: 'Антология The Dark Pictures, Detroit, Late Shift... Это всё...?',
+      check: function(s){
+        var c = compact(s);
+        return c.indexOf('интерактивн') !== -1 &&
+               (c.indexOf('фильм') !== -1 || c.indexOf('кино') !== -1 ||
+                c.indexOf('film') !== -1 || c.indexOf('movie') !== -1);
+      }
+    },
+    {
+      q: 'Назовите игру, в которой по концепту пицца без одного кусочка должна убегать от призраков?',
+      check: function(s){
+        var c = compact(s);
+        return ['пакман','пакмен','пакмэн','pacman','packman','pakman'].indexOf(c) !== -1;
+      }
+    },
+    {
+      q: 'Какой аркадный автомат от Atari стал одним из первых массовых хитов и фактически запустил индустрию видеоигр?',
+      check: function(s){
+        var c = compact(s);
+        return ['понг','pong'].indexOf(c) !== -1;
+      }
+    },
+    {
+      q: 'Знаете ли фамилию человека, который считается изобретателем Всемирной паутины?',
+      check: function(s){
+        var c = compact(s);
+        return ['бернерсли','бернерс','бернерслей','тимбернерсли','тимбернерслей','bernerslee','berners','timbernerslee','timberners'].indexOf(c) !== -1;
+      }
+    }
+  ];
+
+  var MAX_ATTEMPTS = 3;
+  var TAUNTS = [
+    'Допустим, верно... Но я недоволен! 😤',
+    'Слишком легко для тебя. Посмотрим дальше! 😏',
+    'Ладно, верно. Но следующее будет больнее! 😡',
+    'Неужели верно?! Не зли меня дальше! 😠'
+  ];
+
+  var qi = 0;       // текущий вопрос 0..4
+  var fails = 0;    // ошибок на текущем вопросе
+  var busy = false;
+
+  function compact(s){
+    return s.toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9]/g,'');
+  }
+
+  function show(id){
+    ['screen-start','screen-exit','screen-chat'].forEach(function(x){
+      $(x).hidden = (x !== id);
+    });
+  }
+
+  function scrollBottom(){
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function addMsg(text, who, cls){
+    var d = document.createElement('div');
+    d.className = 'msg ' + who + (cls ? ' ' + cls : '');
+    d.textContent = text;
+    messages.appendChild(d);
+    scrollBottom();
+    return d;
+  }
+
+  function lockInput(v){
+    input.disabled = v;
+    $('btn-send').disabled = v;
+  }
+
+  function focusInput(){
+    lockInput(false);
+    input.focus();
+  }
+
+  function setAI(emoji, statusText){
+    $('avatar').textContent = emoji;
+    $('ai-status').textContent = statusText;
+  }
+
+  function setEvil(on){
+    document.body.classList.toggle('evil', on);
+    setAI(on ? '😈' : '🤖', on ? 'злой ИИ 😡' : 'добрый ИИ 😊');
+  }
+
+  function updateDots(){
+    for (var i = 0; i < qdots.length; i++){
+      qdots[i].className = '';
+      if (i < qi) qdots[i].className = 'done';
+      else if (i === qi) qdots[i].className = 'cur';
+    }
+  }
+
+  function updateAttempts(){
+    var left = Math.max(0, MAX_ATTEMPTS - fails);
+    attemptsN.textContent = left;
+    for (var i = 0; i < attemptDots.length; i++){
+      attemptDots[i].classList.toggle('lost', i < fails);
+    }
+  }
+
+  function askQuestion(){
+    addMsg(QUIZ[qi].q, 'ai');
+    focusInput();
+  }
+
+  function startGame(){
+    setEvil(true);
+    show('screen-chat');
+    qi = 0; fails = 0; busy = false;
+    messages.innerHTML = '';
+    attemptsBox.hidden = false;
+    form.hidden = false;
+    $('restart-area').hidden = true;
+    lockInput(true);
+    updateDots();
+    updateAttempts();
+    addMsg('ХА! Раз ты осмелился — держи первый вопрос! 😈', 'ai');
+    askQuestion();
+  }
+
+  function exitGame(){
+    show('screen-exit');
+  }
+
+  function resetToStart(){
+    setEvil(false);
+    qi = 0; fails = 0; busy = false;
+    messages.innerHTML = '';
+    attemptsBox.hidden = false;
+    form.hidden = false;
+    $('restart-area').hidden = true;
+    lockInput(true);
+    updateDots();
+    updateAttempts();
+    show('screen-start');
+  }
+
+  function shakeApp(){
+    app.classList.remove('shake');
+    void app.offsetWidth;
+    app.classList.add('shake');
+    if (navigator.vibrate) navigator.vibrate(60);
+  }
+
+  function wrongFlow(){
+    fails++;
+    updateAttempts();
+    var left = MAX_ATTEMPTS - fails;
+    addMsg(left === 1 ? 'Опять мимо! Осталась последняя попытка 😤' : 'Плохо. Думай ещё 😡', 'ai', 'bad');
+    shakeApp();
+    if (fails >= MAX_ATTEMPTS){
+      busy = true;
+      lockInput(true);
+      addMsg('ХВАТИТ! Ты не достоин этой игры! Я выключаюсь... 😡', 'ai');
+      setTimeout(showPowerOff, 1600);
+    } else {
+      busy = false;
+      setTimeout(focusInput, 150);
+    }
+  }
+
+  function correctFlow(){
+    var last = (qi === QUIZ.length - 1);
+    if (!last){
+      var taunt = TAUNTS[qi];
+      qi++;
+      fails = 0;
+      updateDots();
+      updateAttempts();
+      busy = false;
+      addMsg(taunt, 'ai');
+      setTimeout(function(){
+        if (!busy) askQuestion();
+      }, 1000);
+    } else {
+      finishGame();
+    }
+  }
+
+  function finishGame(){
+    qi = QUIZ.length;
+    fails = 0;
+    busy = false;
+    updateDots();
+    updateAttempts();
+    attemptsBox.hidden = true;
+    form.hidden = true;
+    lockInput(true);
+    setEvil(false); // ИИ снова добрый — оформление возвращается
+    addMsg('Молодец, человек! 🎉 Ты правильно ответил на все вопросы.\nЗапомни следующее слово и его форму: достигла', 'ai');
+    setTimeout(function(){
+      $('restart-area').hidden = false;
+    }, 400);
+  }
+
+  function showPowerOff(){
+    app.classList.add('dying');
+    setTimeout(function(){
+      $('poweroff').classList.add('on');
+    }, 650);
+  }
+
+  function powerOn(){
+    app.classList.remove('dying');
+    $('poweroff').classList.remove('on');
+    resetToStart();
+  }
+
+  function processAnswer(){
+  var v = input.value.trim();
+  if (!v || busy) return;
+
+  busy = true;
+  lockInput(true);
+
+  // Показываем отправленный ответ в чате
+  addMsg(v, 'user');
+
+  // Очищаем поле ответа
+  input.value = '';
+
+  setTimeout(function(){
+    if (QUIZ[qi].check(v)) {
+      correctFlow();
+    } else {
+      wrongFlow();
+    }
+  }, 700);
+}
+
+  $('btn-yes').addEventListener('click', startGame);
+  $('btn-exit').addEventListener('click', exitGame);
+  $('btn-back').addEventListener('click', resetToStart);
+  $('btn-again').addEventListener('click', resetToStart);
+  $('power-btn').addEventListener('click', powerOn);
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    processAnswer();
+  });
+
+  resetToStart();
+})();
+</script>
+</body>
+</html>
