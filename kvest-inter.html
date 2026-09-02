@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Проверка знаний</title>
+<title>Станция терминов мультимедиа</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -153,7 +153,7 @@
   const levels = [
     { emoji: '👆 🖱️ 💬 🔄', answers: ['интерактивность', 'интерактив', 'интерактивности'] },
     { emoji: '🖥️ 🥽 ✨ 🌆', answers: ['виртуальная реальность', 'виртуальной реальности', 'виртуальную реальность', 'виртуальная', 'виар', 'vr'] },
-    { emoji: '🎮 👾 🕹️ 📺', answers: ['видеоигра', 'видео игра', 'видеоигру', 'видео игру', 'игра', 'компьютерная игра', 'компьютерная'] }
+    { emoji: '🎮 👾 🕹️ 📺', answers: ['видеоигра', 'видео игра', 'видеоигру', 'видео игру', 'игра', 'компьютерная игра', 'геймдизайн'] }
   ];
 
   let current = 0;
@@ -234,7 +234,7 @@
 
   function finishQuest() {
     titleEl.textContent = '🎉 Квест пройден!';
-    questionText.textContent = 'В этот раз ты победил. Запомни слово и его форму: полного';
+    questionText.textContent = 'В этот раз ты победил. Запомни слово и его форму: полной';
     hintText.style.display = 'none';
     inputRow.style.display = 'none';
     feedback.classList.remove('show', 'success', 'fail');
