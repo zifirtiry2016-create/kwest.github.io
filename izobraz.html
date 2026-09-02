@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>360° Панорама</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -96,10 +97,55 @@
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
+      animation: wordButtonPulse 2s ease-in-out infinite;
+    }
+
+    .word-button::before {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      z-index: -1;
+      border: 2px solid rgba(103, 225, 255, 0.8);
+      border-radius: inherit;
+      opacity: 0;
+      pointer-events: none;
+      animation: wordButtonRing 2s ease-out infinite;
     }
 
     .word-button:active {
-      transform: scale(0.98);
+      transform: scale(0.96);
+    }
+
+    @keyframes wordButtonPulse {
+      0%,
+      100% {
+        transform: scale(1);
+        box-shadow: 0 10px 30px rgba(18, 166, 255, 0.32);
+      }
+
+      50% {
+        transform: scale(1.06);
+        box-shadow:
+          0 10px 35px rgba(18, 166, 255, 0.55),
+          0 0 18px rgba(77, 255, 207, 0.52);
+      }
+    }
+
+    @keyframes wordButtonRing {
+      0% {
+        opacity: 0.8;
+        transform: scale(0.92);
+      }
+
+      70% {
+        opacity: 0;
+        transform: scale(1.27);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.27);
+      }
     }
 
     .start-screen,
@@ -116,6 +162,7 @@
 
     .start-card,
     .modal-card {
+      position: relative;
       width: min(420px, 100%);
       padding: 28px 20px 22px;
       border: 1px solid rgba(255, 255, 255, 0.18);
@@ -159,6 +206,26 @@
       transform: scale(0.98);
     }
 
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .close-button:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.18);
+    }
+
     .bottom-hint {
       position: fixed;
       z-index: 10;
@@ -187,20 +254,25 @@
       margin: 0 0 14px;
       padding: 14px 16px;
       border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
       font-size: 16px;
       outline: none;
     }
 
+    .modal input:focus {
+      border-color: #9d7cff;
+      box-shadow: 0 0 0 3px rgba(157, 124, 255, 0.18);
+    }
+
     .modal input::placeholder {
-      color: rgba(255,255,255,0.55);
+      color: rgba(255, 255, 255, 0.55);
     }
 
     .feedback {
+      min-height: 44px;
       margin-top: 14px;
-      min-height: 24px;
       font-size: 15px;
       line-height: 1.4;
     }
@@ -219,8 +291,16 @@
         max-width: 60%;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .word-button,
+      .word-button::before {
+        animation: none;
+      }
+    }
   </style>
 </head>
+
 <body>
   <main id="viewer">
     <img id="panorama" src="YuBIL360.png" alt="Панорамное изображение" />
@@ -245,12 +325,35 @@
     </div>
   </section>
 
-  <section class="modal" id="wordModal">
+  <section
+    class="modal"
+    id="wordModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="wordModalTitle"
+  >
     <div class="modal-card">
-      <h2>Введи слово</h2>
+      <button
+        class="close-button"
+        id="closeWordButton"
+        type="button"
+        aria-label="Закрыть окно ввода слова"
+      >
+        ×
+      </button>
+
+      <h2 id="wordModalTitle">Введи слово</h2>
       <p>Подумай внимательно о том, что ты ищешь.</p>
-      <input id="wordInput" type="text" placeholder="Напиши ответ" autocomplete="off" />
-      <button id="checkButton">Проверить</button>
+
+      <input
+        id="wordInput"
+        type="text"
+        placeholder="Напиши ответ"
+        autocomplete="off"
+      />
+
+      <button id="checkButton" type="button">Проверить</button>
+
       <div class="feedback" id="feedback"></div>
     </div>
   </section>
@@ -262,10 +365,12 @@
     const startScreen = document.getElementById("startScreen");
     const status = document.getElementById("status");
     const hint = document.getElementById("hint");
+
     const wordButton = document.getElementById("wordButton");
     const wordModal = document.getElementById("wordModal");
     const wordInput = document.getElementById("wordInput");
     const checkButton = document.getElementById("checkButton");
+    const closeWordButton = document.getElementById("closeWordButton");
     const feedback = document.getElementById("feedback");
 
     let imageWidth = 0;
@@ -304,7 +409,9 @@
     }
 
     function getFitHeight() {
-      return isLandscape() ? window.innerHeight * 1.24 : window.innerHeight * 1.12;
+      return isLandscape()
+        ? window.innerHeight * 1.24
+        : window.innerHeight * 1.12;
     }
 
     function getScaledWidth() {
@@ -318,13 +425,19 @@
 
     function renderLoop() {
       currentScale += (targetScale - currentScale) * 0.12;
-      if (Math.abs(targetScale - currentScale) < 0.001) currentScale = targetScale;
+
+      if (Math.abs(targetScale - currentScale) < 0.001) {
+        currentScale = targetScale;
+      }
 
       const limit = getMaxShift();
       targetX = clamp(targetX, -limit, limit);
 
       currentX += (targetX - currentX) * smoothing;
-      if (Math.abs(targetX - currentX) < 0.05) currentX = targetX;
+
+      if (Math.abs(targetX - currentX) < 0.05) {
+        currentX = targetX;
+      }
 
       panorama.style.transform =
         `translate3d(calc(-50% + ${currentX}px), -50%, 0) scale(${currentScale})`;
@@ -340,16 +453,20 @@
       if (typeof event.webkitCompassHeading === "number") {
         return event.webkitCompassHeading;
       }
+
       if (typeof event.alpha === "number") {
         return 360 - event.alpha;
       }
+
       return null;
     }
 
     function angleDifference(current, previous) {
       let difference = current - previous;
+
       if (difference > 180) difference -= 360;
       if (difference < -180) difference += 360;
+
       return difference;
     }
 
@@ -395,6 +512,7 @@
     viewer.addEventListener("touchmove", (e) => {
       if (e.touches.length === 2) {
         const currentDistance = distanceBetweenTouches(e);
+
         if (pinchStartDistance > 0) {
           const ratio = currentDistance / pinchStartDistance;
           targetScale = clamp(pinchStartScale * ratio, minScale, maxScale);
@@ -404,6 +522,7 @@
 
     viewer.addEventListener("pointerdown", (event) => {
       if (event.pointerType === "touch" && event.isPrimary === false) return;
+
       isDragging = true;
       dragStartX = event.clientX;
       dragStartPanoramaX = targetX;
@@ -412,13 +531,16 @@
 
     viewer.addEventListener("pointermove", (event) => {
       if (!isDragging) return;
+
       const difference = event.clientX - dragStartX;
       setTargetX(dragStartPanoramaX + difference);
     });
 
     function endDragging(event) {
       if (!isDragging) return;
+
       isDragging = false;
+
       if (viewer.hasPointerCapture(event.pointerId)) {
         viewer.releasePointerCapture(event.pointerId);
       }
@@ -450,7 +572,10 @@
           typeof DeviceOrientationEvent.requestPermission === "function"
         ) {
           const permission = await DeviceOrientationEvent.requestPermission();
-          if (permission !== "granted") throw new Error("denied");
+
+          if (permission !== "granted") {
+            throw new Error("denied");
+          }
         }
 
         sensorEnabled = true;
@@ -462,52 +587,63 @@
 
         startScreen.classList.add("hidden");
         status.textContent = "Повернись с телефоном";
-        hint.textContent = "Поворачивай телефон, двигай панораму пальцем и приближай двумя пальцами.";
+        hint.textContent =
+          "Поворачивай телефон, двигай панораму пальцем и приближай двумя пальцами.";
 
       } catch (error) {
         startScreen.classList.add("hidden");
         status.textContent = "Датчики не включены";
         status.classList.add("error");
-        hint.textContent = "Панораму можно двигать пальцем и приближать двумя пальцами.";
+        hint.textContent =
+          "Панораму можно двигать пальцем и приближать двумя пальцами.";
+      }
+    }
+
+    function openWordModal() {
+      wordModal.style.display = "grid";
+      feedback.textContent = "";
+      feedback.style.color = "";
+      wordInput.value = "";
+      wordInput.focus();
+    }
+
+    function closeWordModal() {
+      wordModal.style.display = "none";
+      wordButton.focus();
+    }
+
+    function checkWord() {
+      const value = wordInput.value.trim().toLowerCase();
+
+      if (value === "гезамткунстверк") {
+        feedback.textContent =
+          "Верно! Ты просто умничка :3 целую в носик! Обязательно запомни это слово";
+        feedback.style.color = "#9effc1";
+      } else {
+        feedback.textContent = "Смотри внимательнее >:(";
+        feedback.style.color = "#ffb9b9";
       }
     }
 
     startButton.addEventListener("click", startExperience);
 
-    wordButton.addEventListener("click", () => {
-      wordModal.style.display = "grid";
-      feedback.textContent = "";
-      wordInput.value = "";
-      wordInput.focus();
-    });
-
-    function closeWordModal() {
-      wordModal.style.display = "none";
-    }
-
-    function checkWord() {
-      const value = wordInput.value.trim().toLowerCase();
-      if (value === "гезамткунстверк") {
-        feedback.textContent = "Верно! Ты просто умничка :3! Лови поцелуйчик!";
-        feedback.style.color = "#9effc1";
-        setTimeout(closeWordModal, 1200);
-      } else {
-        feedback.textContent = "Смотри внимательнее >:(";
-        feedback.style.color = "#ffb9b9";
-        setTimeout(() => {
-          closeWordModal();
-        }, 1200);
-      }
-    }
-
+    wordButton.addEventListener("click", openWordModal);
+    closeWordButton.addEventListener("click", closeWordModal);
     checkButton.addEventListener("click", checkWord);
-    wordInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") checkWord();
-      if (e.key === "Escape") closeWordModal();
+
+    wordInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") checkWord();
+
+      if (event.key === "Escape") closeWordModal();
     });
 
-    wordModal.addEventListener("click", (e) => {
-      if (e.target === wordModal) closeWordModal();
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        wordModal.style.display === "grid"
+      ) {
+        closeWordModal();
+      }
     });
 
     requestAnimationFrame(renderLoop);
