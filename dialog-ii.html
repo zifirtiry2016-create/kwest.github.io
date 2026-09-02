@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Диалог с ИИ — квест</title>
+<title>Станция искусственного интеллекта</title>
 <style>
   :root{
     --bg1:#ffe4f0; --bg2:#d9ebff; --bg3:#e6ddff;
@@ -241,11 +241,11 @@
     <!-- ===== стартовый экран ===== -->
     <section class="screen center-screen" id="screen-start">
       <div class="ai-big">🤖</div>
-      <h1>ИИ вызывает тебя на дуэль</h1>
+      <h1>Милый ИИ-бот</h1>
       <p class="intro">Тебе предстоит ответить на 5 наисложнейших вопросов, ты готов?</p>
       <div class="btn-row">
-        <button class="btn" id="btn-yes">Да — начать игру</button>
-        <button class="btn btn-ghost" id="btn-exit">Нет — выйти</button>
+        <button class="btn" id="btn-yes">Да</button>
+        <button class="btn btn-ghost" id="btn-exit">Нет, я пошёл</button>
       </div>
     </section>
 
@@ -253,9 +253,9 @@
     <section class="screen center-screen" id="screen-exit" hidden>
       <div class="ai-big">🥲</div>
       <h1>Ну и правильно...</h1>
-      <p class="intro">Я же говорил — это не для слабаков. Заходи, когда будешь готов.</p>
+      <p class="intro">Ты меня разочаровал. Заходи, когда будешь готов</p>
       <div class="btn-row">
-        <button class="btn" id="btn-back">Хочу попробовать ещё раз</button>
+        <button class="btn" id="btn-back">Ещё раз</button>
       </div>
     </section>
 
@@ -264,8 +264,8 @@
       <div class="chat-header">
         <div class="avatar" id="avatar">🤖</div>
         <div class="who">
-          <div class="name">ИИ-экзаменатор</div>
-          <div class="status" id="ai-status">добрый ИИ 😊</div>
+          <div class="name">ИИ-бот</div>
+          <div class="status" id="ai-status">😊</div>
         </div>
         <div class="qdots" id="qdots">
           <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
@@ -294,7 +294,7 @@
   <!-- ===== экран выключения ===== -->
   <div class="poweroff" id="poweroff">
     <div>
-      <div class="power-text">Ты не достоин этой игры</div>
+      <div class="power-text">Игры закончена</div>
       <div class="power-sub">система отключена</div>
       <button class="power-btn" id="power-btn">⏻&nbsp; Включить заново</button>
     </div>
@@ -315,14 +315,14 @@
 
   var QUIZ = [
     {
-      q: 'Знаете ли вы фамилию режиссёра, радиопостановка которого вызвала настолько бурную реакцию, что около 1 млн человек поверили в нападение инопланетян?',
+      q: 'Назови фамилию режиссёра, радиопостановка которого вызвала настолько бурную реакцию, что около 1 млн человек поверили в нападение инопланетян',
       check: function(s){
         var c = compact(s);
         return ['уэллс','wells','орсонуэллс','orsonwells'].indexOf(c) !== -1;
       }
     },
     {
-      q: 'Антология The Dark Pictures, Detroit, Late Shift... Это всё...?',
+      q: 'Антология The Dark Pictures, Detroit, Beyond: Two Souls, Heavy Rain. Это всё называется...?',
       check: function(s){
         var c = compact(s);
         return c.indexOf('интерактивн') !== -1 &&
@@ -331,7 +331,7 @@
       }
     },
     {
-      q: 'Назовите игру, в которой по концепту пицца без одного кусочка должна убегать от призраков?',
+      q: 'Назовите игру, в которой по концепту пицца без одного кусочка должна убегать от призраков',
       check: function(s){
         var c = compact(s);
         return ['пакман','пакмен','пакмэн','pacman','packman','pakman'].indexOf(c) !== -1;
@@ -345,7 +345,7 @@
       }
     },
     {
-      q: 'Знаете ли фамилию человека, который считается изобретателем Всемирной паутины?',
+      q: 'Назови фамилию человека, который считается изобретателем Всемирной паутины',
       check: function(s){
         var c = compact(s);
         return ['бернерсли','бернерс','бернерслей','тимбернерсли','тимбернерслей','bernerslee','berners','timbernerslee','timberners'].indexOf(c) !== -1;
@@ -355,10 +355,10 @@
 
   var MAX_ATTEMPTS = 3;
   var TAUNTS = [
-    'Допустим, верно... Но я недоволен! 😤',
-    'Слишком легко для тебя. Посмотрим дальше! 😏',
-    'Ладно, верно. Но следующее будет больнее! 😡',
-    'Неужели верно?! Не зли меня дальше! 😠'
+    'Допустим, верно...',
+    'Слишком легко для тебя. Посмотрим дальше',
+    'Интересный ответ...',
+    'Неужели верно...'
   ];
 
   var qi = 0;       // текущий вопрос 0..4
@@ -440,7 +440,7 @@
     lockInput(true);
     updateDots();
     updateAttempts();
-    addMsg('ХА! Раз ты осмелился — держи первый вопрос! 😈', 'ai');
+    addMsg('Раз ты осмелился, то вот мой первый вопрос', 'ai');
     askQuestion();
   }
 
@@ -472,12 +472,12 @@
     fails++;
     updateAttempts();
     var left = MAX_ATTEMPTS - fails;
-    addMsg(left === 1 ? 'Опять мимо! Осталась последняя попытка 😤' : 'Плохо. Думай ещё 😡', 'ai', 'bad');
+    addMsg(left === 1 ? 'Я был о тебе лучшего мнения' : 'Плохо. Думай ещё', 'ai', 'bad');
     shakeApp();
     if (fails >= MAX_ATTEMPTS){
       busy = true;
       lockInput(true);
-      addMsg('ХВАТИТ! Ты не достоин этой игры! Я выключаюсь... 😡', 'ai');
+      addMsg('Ты слишком плох. Ты не достоин этой игры', 'ai');
       setTimeout(showPowerOff, 1600);
     } else {
       busy = false;
@@ -513,7 +513,7 @@
     form.hidden = true;
     lockInput(true);
     setEvil(false); // ИИ снова добрый — оформление возвращается
-    addMsg('Молодец, человек! 🎉 Ты правильно ответил на все вопросы.\nЗапомни следующее слово и его форму: достигла', 'ai');
+    addMsg('Молодец, человек! 🎉 Ты правильно ответил на все вопросы!\nЗапомни следующее слово и его форму: мультисваги', 'ai');
     setTimeout(function(){
       $('restart-area').hidden = false;
     }, 400);
